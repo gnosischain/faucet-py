@@ -1,5 +1,6 @@
 import logging
 from flask import Flask, Blueprint, request, jsonify
+from flask_cors import CORS
 
 from web3 import Web3
 from web3.middleware import construct_sign_and_send_raw_middleware
@@ -12,6 +13,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('api.settings')
     apiv1 = Blueprint("version1", "version1")
+    cors = CORS(app, resources={r"/api/v1/*": {"origins": app.config['CORS_ALLOWED_ORIGINS']}})
 
     w3 = Web3(Web3.HTTPProvider(app.config['FAUCET_RPC_URL']))
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(app.config['FAUCET_PRIVATE_KEY']))
@@ -28,9 +30,14 @@ def create_app():
 
     @apiv1.route("/status")
     def status():
-        return {
-            'status': 'ok'
-        }, 200
+        return jsonify(status='ok'), 200
+    
+
+    @apiv1.route("/info")
+    def info():
+        return jsonify(
+            enabledTokens=app.config['FAUCET_ENABLED_TOKENS'],
+            maximumAmount=app.config['FAUCET_AMOUNT']), 200
 
 
     @apiv1.route("/ask", methods=["POST"])
