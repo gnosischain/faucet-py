@@ -1,5 +1,10 @@
 from secrets import token_bytes
+import json
 
+ZERO_ADDRESS = "0x" + '0'*40
+
+CAPTCHA_TEST_SECRET_KEY = '0x0000000000000000000000000000000000000000'
+CAPTCHA_TEST_RESPONSE_TOKEN = '10000000-aaaa-bbbb-cccc-000000000001'
 
 TEMP_ENV_VARS = {
     'FAUCET_RPC_URL': 'http://localhost:8545',
@@ -7,7 +12,8 @@ TEMP_ENV_VARS = {
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
     'FAUCET_AMOUNT': 0.1,
     'FAUCET_TIME_LIMIST_SECONDS': '1',
-    'FAUCET_ENABLED_TOKENS': ['0x' + '0'*40]
+    'FAUCET_ENABLED_TOKENS': json.loads('[{"address":"' + ZERO_ADDRESS + '", "name": "TestToken"}]'),
+    'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }
 
 # Mocked values

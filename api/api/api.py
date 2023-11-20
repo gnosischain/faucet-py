@@ -5,7 +5,20 @@ from flask_cors import CORS
 from web3 import Web3
 from web3.middleware import construct_sign_and_send_raw_middleware
 
-from .services import Token, Cache, claim_native, claim_token
+from .services import Token, Cache, claim_native, claim_token, captcha_verify
+
+
+def is_token_enabled(address, tokens_list):
+    if address.lower() == 'native':
+        return True
+    
+    is_enabled = False
+    checksum_address = Web3.to_checksum_address(address)
+    for enabled_tokens in tokens_list:
+        if checksum_address == enabled_tokens['address']:
+            is_enabled = True
+            break
+    return is_enabled
 
 
 def create_app():
@@ -45,6 +58,12 @@ def create_app():
         validation_errors = []
 
         request_data = request.get_json()
+
+        # check hcatpcha
+        catpcha_verified = captcha_verify(request_data.get('captcha'), app.config['CAPTCHA_VERIFY_ENDPOINT'], app.config['CAPTCHA_SECRET_KEY'])
+        if not catpcha_verified:
+            validation_errors.append('captcha: validation failed')
+        
         if request_data.get('chainId') != app.config['FAUCET_CHAIN_ID']:
             validation_errors.append('chainId: %s is not supported %s' % (request_data.get('chainId'), app.config['FAUCET_CHAIN_ID']))
         
@@ -57,9 +76,7 @@ def create_app():
             validation_errors.append('tokenAddress: A valid token address or string \"native\" must be specified')
         
         try:
-            if token_address and (
-                token_address.lower() != 'native' and not Web3.to_checksum_address(token_address) in app.config['FAUCET_ENABLED_TOKENS']
-            ):
+            if not is_token_enabled(token_address, app.config['FAUCET_ENABLED_TOKENS']):
                 validation_errors.append('tokenAddress: Token %s is not enabled' % token_address)
         except:
             validation_errors.append('tokenAddress: invalid token address'), 400

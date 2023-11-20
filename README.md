@@ -22,6 +22,7 @@ python3 -m flask --app api run --port 8000
 ### Run application
 
 ```
+cd api
 python3 -m flask --app api run --port 8000
 ```
 
@@ -29,5 +30,6 @@ python3 -m flask --app api run --port 8000
 ### Run tests
 
 ```
-python -m pytest -s
+cd api
+python3 -m pytest -s
 ```
