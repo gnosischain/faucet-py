@@ -48,9 +48,19 @@ def create_app():
 
     @apiv1.route("/info")
     def info():
+        enabled_tokens = []
+        enabled_tokens.extend(app.config['FAUCET_ENABLED_TOKENS'])
+        enabled_tokens.append(
+            {
+                'name': app.config['FAUCET_CHAIN_NATIVE_TOKEN_SYMBOL'],
+                'address': 'native'
+            }
+        )
         return jsonify(
-            enabledTokens=app.config['FAUCET_ENABLED_TOKENS'],
-            maximumAmount=app.config['FAUCET_AMOUNT']), 200
+            enabledTokens=enabled_tokens,
+            maximumAmount=app.config['FAUCET_AMOUNT'],
+            chainId=app.config['FAUCET_CHAIN_ID']
+        ), 200
 
 
     @apiv1.route("/ask", methods=["POST"])
