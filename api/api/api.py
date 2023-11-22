@@ -78,7 +78,7 @@ def create_app():
             validation_errors.append('chainId: %s is not supported %s' % (request_data.get('chainId'), app.config['FAUCET_CHAIN_ID']))
         
         recipient = request_data.get('recipient', None)
-        if not recipient:
+        if not w3.is_address(recipient):
             validation_errors.append('recipient: A valid recipient address must be specified')
         
         token_address = request_data.get('tokenAddress', None)
@@ -102,11 +102,16 @@ def create_app():
         if cache.limit_by_address(recipient):
             return jsonify(message='recipient: you have exceeded the limit for today. Try again in X hours'), 429
         
-        if token_address == 'native':
-            tx_hash = claim_native(w3, app.config['FAUCET_ADDRESS'], recipient, amount)
-        else:
-            tx_hash = claim_token(w3, app.config['FAUCET_ADDRESS'], recipient, amount, token_address)
-        return jsonify(transactionHash=tx_hash), 200
+        amount_wei = w3.to_wei(amount, 'ether')
+        try:
+            if token_address == 'native':
+                tx_hash = claim_native(w3, app.config['FAUCET_ADDRESS'], recipient, amount_wei)
+            else:
+                tx_hash = claim_token(w3, app.config['FAUCET_ADDRESS'], recipient, amount_wei, token_address)
+            return jsonify(transactionHash=tx_hash), 200
+        except ValueError as e:
+            message = "".join([arg['message'] for arg in e.args])
+            return jsonify(message=message), 400
 
 
     app.register_blueprint(apiv1, url_prefix="/api/v1")

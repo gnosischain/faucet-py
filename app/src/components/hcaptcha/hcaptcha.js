@@ -126,8 +126,35 @@ export const HCaptchaForm = function () {
     );
   };
 
+
+          {/* <h3>Gnosis Faucet</h3>
+        <div>
+          Paste your account address in the field below and choose if you want
+          to receive either a portion of the native token or any of the enabled
+          ERC20 tokens.
+        </div> */}
+
+
+
   return (
     <Container maxWidth="sm">
+
+      <Typography
+        variant="h3"
+        component="h2"
+        align="center"
+        gutterBottom={true}>
+        Gnosis Faucet
+      </Typography>
+
+      <Typography
+        variant="body1"
+        component="h2"
+        align="left"
+        gutterBottom={true}>
+        Paste your account address in the field below and choose if you want to receive either a portion of the native token or any of the enabled ERC20 tokens.
+      </Typography>
+
       <Card>
         <CardContent>
           <Grid container spacing={2}>
@@ -155,7 +182,6 @@ export const HCaptchaForm = function () {
             <Grid item xs={12}>
               <Button
                 disabled={!captchaVerified || !walletAddress}
-                fullWidth
                 variant="outlined"
                 onClick={() => sendRequest()}
               >
