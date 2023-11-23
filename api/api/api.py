@@ -80,6 +80,9 @@ def create_app():
         recipient = request_data.get('recipient', None)
         if not w3.is_address(recipient):
             validation_errors.append('recipient: A valid recipient address must be specified')
+
+        if recipient.lower() == app.config['FAUCET_ADDRESS']:
+            validation_errors.append('recipient: address cant\'t be the Faucet address itself')
         
         token_address = request_data.get('tokenAddress', None)
         if not token_address:
