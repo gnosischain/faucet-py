@@ -4,6 +4,7 @@ from cachetools import TTLCache
 
 class Cache:
     def __init__(self, limit_seconds):
+        self._ttl = limit_seconds
         self.cache = TTLCache(maxsize=10, ttl=timedelta(seconds=limit_seconds), timer=datetime.now)
 
     def limit_by_address(self, address):
@@ -17,3 +18,9 @@ class Cache:
 
     def clear(self):
         self.cache.clear()
+
+    def ttl(self, hours=False):
+        if hours:
+            # 3600 seconds = 1h
+            return self._ttl // 3600
+        return self._ttl

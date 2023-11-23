@@ -64,6 +64,18 @@ export const HCaptchaForm = function () {
     setCaptchaToken(_token);
   };
 
+  function formatErrors(errors) {
+    const divs = []
+  
+    for(let idx in errors) {
+      divs.push(<div>{errors[idx]}</div>)
+    }
+
+    return (
+      <div>{divs}</div>
+    )
+  }
+
   const sendRequest = async () => {
     if (walletAddress.length <= 0) {
       toast.error("Please provide a wallet address.");
@@ -92,7 +104,7 @@ export const HCaptchaForm = function () {
         })
         .catch((error) => {
           setShowLoading(false);
-          toast.error(error.response.data.errors.join("<br/>"));
+          toast.error(formatErrors(error.response.data.errors));
         });
     } catch (error) {
       setShowLoading(false);
@@ -125,15 +137,6 @@ export const HCaptchaForm = function () {
       </Fragment>
     );
   };
-
-
-          {/* <h3>Gnosis Faucet</h3>
-        <div>
-          Paste your account address in the field below and choose if you want
-          to receive either a portion of the native token or any of the enabled
-          ERC20 tokens.
-        </div> */}
-
 
 
   return (

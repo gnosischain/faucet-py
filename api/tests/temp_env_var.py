@@ -11,7 +11,7 @@ TEMP_ENV_VARS = {
     'FAUCET_CHAIN_ID': '100000',
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
     'FAUCET_AMOUNT': 0.1,
-    'FAUCET_TIME_LIMIST_SECONDS': '1',
+    'FAUCET_TIME_LIMIT_SECONDS': '1',
     'FAUCET_ENABLED_TOKENS': json.loads('[{"address":"' + ZERO_ADDRESS + '", "name": "TestToken"}]'),
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }

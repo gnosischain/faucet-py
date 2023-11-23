@@ -31,7 +31,7 @@ def create_app():
     w3 = Web3(Web3.HTTPProvider(app.config['FAUCET_RPC_URL']))
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(app.config['FAUCET_PRIVATE_KEY']))
 
-    cache = Cache(app.config['FAUCET_TIME_LIMIST_SECONDS'])
+    cache = Cache(app.config['FAUCET_TIME_LIMIT_SECONDS'])
 
     # Set logger
     logging.basicConfig(level=logging.INFO)
@@ -100,7 +100,7 @@ def create_app():
         
         # Check last claim
         if cache.limit_by_address(recipient):
-            return jsonify(message='recipient: you have exceeded the limit for today. Try again in X hours'), 429
+            return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %s hours' % cache.ttl(hours=True)]), 429
         
         amount_wei = w3.to_wei(amount, 'ether')
         try:
@@ -111,7 +111,7 @@ def create_app():
             return jsonify(transactionHash=tx_hash), 200
         except ValueError as e:
             message = "".join([arg['message'] for arg in e.args])
-            return jsonify(message=message), 400
+            return jsonify(errors=[message]), 400
 
 
     app.register_blueprint(apiv1, url_prefix="/api/v1")

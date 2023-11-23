@@ -6,9 +6,9 @@ A simple python implementation of an EVM compatible faucet.
 
 ### Requirements
 
-Python +3.x
+Python +3.x, NodeJS v18.x
 
-### Installation
+### Python API
 
 ```
 cd api
@@ -19,7 +19,7 @@ pip3 install -r requirements.txt
 python3 -m flask --app api run --port 8000
 ```
 
-### Run application
+#### Run application
 
 ```
 cd api
@@ -27,9 +27,25 @@ python3 -m flask --app api run --port 8000
 ```
 
 
-### Run tests
+#### Run tests
 
 ```
 cd api
 python3 -m pytest -s
+```
+
+### ReactJS Frontend
+
+```
+nvm use
+
+cd app
+yarn
+```
+
+#### Run application
+
+```
+cd app
+yarn start
 ```
