@@ -13,6 +13,12 @@ class Cache:
             self.cache[address] = datetime.now()
         return cached
     
+    def limit_by_ip(self, ip):
+        cached = self.cache.get(ip, False)
+        if not cached:
+            self.cache[ip] = datetime.now()
+        return cached      
+    
     def delete(self, attr):
        self.cache.pop(attr)
 

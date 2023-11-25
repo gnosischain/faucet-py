@@ -5,7 +5,7 @@ from flask_cors import CORS
 from web3 import Web3
 from web3.middleware import construct_sign_and_send_raw_middleware
 
-from .services import Token, Cache, claim_native, claim_token, captcha_verify
+from .services import Token, Cache, Strategy, claim_native, claim_token, captcha_verify
 
 
 def is_token_enabled(address, tokens_list):
@@ -31,7 +31,7 @@ def create_app():
     w3 = Web3(Web3.HTTPProvider(app.config['FAUCET_RPC_URL']))
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(app.config['FAUCET_PRIVATE_KEY']))
 
-    cache = Cache(app.config['FAUCET_TIME_LIMIT_SECONDS'])
+    cache = Cache(app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'])
 
     # Set logger
     logging.basicConfig(level=logging.INFO)
@@ -81,7 +81,7 @@ def create_app():
         if not w3.is_address(recipient):
             validation_errors.append('recipient: A valid recipient address must be specified')
 
-        if recipient.lower() == app.config['FAUCET_ADDRESS']:
+        if not recipient or recipient.lower() == app.config['FAUCET_ADDRESS']:
             validation_errors.append('recipient: address cant\'t be the Faucet address itself')
         
         token_address = request_data.get('tokenAddress', None)
@@ -101,9 +101,17 @@ def create_app():
         if len(validation_errors) > 0:
             return jsonify(errors=validation_errors), 400
         
-        # Check last claim
-        if cache.limit_by_address(recipient):
-            return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %s hours' % cache.ttl(hours=True)]), 429
+        if app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.address.value:
+            # Check last claim
+            if cache.limit_by_address(recipient):
+                return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %s hours' % cache.ttl(hours=True)]), 429
+        elif app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip.value:
+            ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+            # Check last claim for the IP address
+            if cache.limit_by_ip(ip_address):
+                return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %s hours' % cache.ttl(hours=True)]), 429
+        elif app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip_and_address:
+            raise NotImplemented
         
         amount_wei = w3.to_wei(amount, 'ether')
         try:
