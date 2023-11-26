@@ -13,10 +13,10 @@ function App() {
       <Container maxWidth="xl" sx={{ marginBottom: "2em" }} id="app-container">
         <ToastContainer
           position="top-right"
-          autoClose={50000}
+          autoClose={false}
           hideProgressBar={false}
           newestOnTop={false}
-          closeOnClick
+          closeOnClick={false}
           rtl={false}
           pauseOnFocusLoss
           draggable

@@ -10,6 +10,7 @@ import {
   Select,
   MenuItem,
   useMediaQuery,
+  InputLabel
 } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -31,7 +32,6 @@ export const HCaptchaForm = function () {
   const [enabledTokens, setEnabledTokens] = useState([]);
   const [tokenAmount, setTokenAmount] = useState(0);
   const [showLoading, setShowLoading] = useState(false);
-  const [transactionHash, setTransactionHash] = useState("");
 
   const getFaucetInfo = async () => {
     return axios.get(`${process.env.REACT_APP_FAUCET_API_URL}/info`);
@@ -68,13 +68,19 @@ export const HCaptchaForm = function () {
     const divs = []
   
     for(let idx in errors) {
-      divs.push(<div>{errors[idx]}</div>)
+      divs.push(<div key={idx}>{errors[idx]}</div>)
     }
 
     return (
       <div>{divs}</div>
     )
   }
+
+  const ToastTxSuccessful = (txHash) => (
+    <div>
+      Tokens sent to your wallet address. Hash: {txHash}
+    </div>
+  );
 
   const sendRequest = async () => {
     if (walletAddress.length <= 0) {
@@ -97,10 +103,9 @@ export const HCaptchaForm = function () {
         .post(apiURL, req)
         .then((response) => {
           setShowLoading(false);
-          setTransactionHash(response.data.transactionHash);
           setWalletAddress("");
           setCaptchaVerified(true);
-          toast("Tokens sent to your wallet address. Hash: " + transactionHash);
+          toast(ToastTxSuccessful(response.data.transactionHash));
         })
         .catch((error) => {
           setShowLoading(false);
@@ -162,17 +167,18 @@ export const HCaptchaForm = function () {
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <label>Wallet address</label>
+              <InputLabel id="input-wallet-address-label">Wallet address</InputLabel>
               <TextField
                 onChange={handleWalletAddressChange}
                 value={walletAddress}
                 id="wallet-address"
+                labelId="input-wallet-address-label"
                 fullWidth
               />
             </Grid>
             <Grid item xs={12}>
-              <label>Token</label>
-              <Select value={tokenAddress} onChange={handleTokenChange}>
+              <InputLabel id="select-token-label">Token</InputLabel>
+              <Select value={tokenAddress} onChange={handleTokenChange} labelId="select-token-label">
                 {enabledTokens?.map((item) => {
                   return (
                     <MenuItem key={item.address} value={item.address}>

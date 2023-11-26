@@ -15,7 +15,7 @@ def claim_native(w3, sender, recipient, amount):
         'to': recipient,
         'value': amount
     }
-    return w3.eth.send_transaction(tx_dict)
+    return w3.eth.send_transaction(tx_dict).hex()
 
 def claim_token(w3, sender, recipient, amount, token_address):
     """
@@ -28,5 +28,4 @@ def claim_token(w3, sender, recipient, amount, token_address):
     - token_address: String
     """
     token = Token(token_address, w3)
-    tx_hash = token.transfer(sender, recipient, amount)
-    return tx_hash
+    return token.transfer(sender, recipient, amount)

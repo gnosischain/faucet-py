@@ -21,6 +21,11 @@ def is_token_enabled(address, tokens_list):
     return is_enabled
 
 
+def get_balance(w3, address, format='ether'):
+    balance = w3.eth.get_balance(address)
+    return w3.from_wei(balance, format)
+
+
 def create_app():
     # Init Flask app
     app = Flask(__name__)
@@ -32,12 +37,14 @@ def create_app():
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(app.config['FAUCET_PRIVATE_KEY']))
 
     cache = Cache(app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'])
+    faucet_balance = get_balance(w3, app.config['FAUCET_ADDRESS'])
 
     # Set logger
     logging.basicConfig(level=logging.INFO)
     logging.info("="*60)
     logging.info("RPC_URL        = " + app.config['FAUCET_RPC_URL'])
     logging.info("FAUCET ADDRESS = " + app.config['FAUCET_ADDRESS'])
+    logging.info("FAUCET BALANCE = %d %s" % (faucet_balance, app.config['FAUCET_CHAIN_NATIVE_TOKEN_SYMBOL']))
     logging.info("="*60)
 
 
