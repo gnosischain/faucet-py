@@ -132,6 +132,5 @@ def create_app():
             message = "".join([arg['message'] for arg in e.args])
             return jsonify(errors=[message]), 400
 
-
     app.register_blueprint(apiv1, url_prefix="/api/v1")
     return app

@@ -22,5 +22,5 @@ class Token:
             'from': sender_address
         })
 
-        tx_hash = self.w3.eth.send_transactions(transfer_tx)
+        tx_hash = self.w3.eth.send_transaction(transfer_tx)
         return tx_hash.hex()
