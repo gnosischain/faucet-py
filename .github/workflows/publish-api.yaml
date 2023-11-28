@@ -5,6 +5,8 @@ name: Create and publish docker images for the API
 on:
   push:
     branches: ['main']
+    tags:
+      - v*
     paths:
         - 'api/**'
   workflow_dispatch:
