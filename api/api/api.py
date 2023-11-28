@@ -31,7 +31,8 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('api.settings')
     apiv1 = Blueprint("version1", "version1")
-    cors = CORS(app, resources={r"/api/v1/*": {"origins": app.config['CORS_ALLOWED_ORIGINS']}})
+    # Apply CORS
+    CORS(app, resources={r"/api/v1/*": {"origins": app.config['CORS_ALLOWED_ORIGINS']}})
 
     w3 = Web3(Web3.HTTPProvider(app.config['FAUCET_RPC_URL']))
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(app.config['FAUCET_PRIVATE_KEY']))
