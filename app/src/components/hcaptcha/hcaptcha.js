@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from "react";
+import { useEffect, useState, useRef, Fragment } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 import { Container } from "@mui/system";
@@ -24,6 +24,7 @@ import "./hcaptcha.css";
 const siteKey = process.env.REACT_APP_HCAPTCHA_SITE_KEY;
 
 export const HCaptchaForm = function () {
+  const captchaRef = useRef(null);
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [chainId, setChainId] = useState(null);
@@ -104,7 +105,10 @@ export const HCaptchaForm = function () {
         .then((response) => {
           setShowLoading(false);
           setWalletAddress("");
+          // Reset captcha
           setCaptchaVerified(true);
+          captchaRef.current?.resetCaptcha();
+          // Show info on UI
           toast(ToastTxSuccessful(response.data.transactionHash));
         })
         .catch((error) => {
@@ -137,6 +141,7 @@ export const HCaptchaForm = function () {
             size={isTabletOrMobile ? "compact" : "normal"}
             sitekey={siteKey}
             onVerify={onVerifyCaptcha}
+            ref={captchaRef}
           />
         </Grid>
       </Fragment>
@@ -172,13 +177,13 @@ export const HCaptchaForm = function () {
                 onChange={handleWalletAddressChange}
                 value={walletAddress}
                 id="wallet-address"
-                labelId="input-wallet-address-label"
+                labelid="input-wallet-address-label"
                 fullWidth
               />
             </Grid>
             <Grid item xs={12}>
               <InputLabel id="select-token-label">Token</InputLabel>
-              <Select value={tokenAddress} onChange={handleTokenChange} labelId="select-token-label">
+              <Select value={tokenAddress} onChange={handleTokenChange} labelid="select-token-label">
                 {enabledTokens?.map((item) => {
                   return (
                     <MenuItem key={item.address} value={item.address}>
