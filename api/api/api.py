@@ -6,6 +6,7 @@ from web3 import Web3
 from web3.middleware import construct_sign_and_send_raw_middleware
 
 from .services import Token, Cache, Strategy, claim_native, claim_token, captcha_verify
+from .const import NATIVE_TOKEN_ADDRESS
 
 
 def is_token_enabled(address, tokens_list):
@@ -14,16 +15,60 @@ def is_token_enabled(address, tokens_list):
     
     is_enabled = False
     checksum_address = Web3.to_checksum_address(address)
-    for enabled_tokens in tokens_list:
-        if checksum_address == enabled_tokens['address']:
+    for enabled_token in tokens_list:
+        if checksum_address == enabled_token['address']:
             is_enabled = True
             break
     return is_enabled
+
+def is_amount_valid(amount, token_address, tokens_list):
+
+    if not token_address:
+        raise ValueError(
+            'Token address not supported',
+            str(token_address),
+            'supported tokens',
+            " ".join(list(map(lambda x: x['address'], tokens_list)))
+        ) 
+
+    token_address_to_check = None
+    if token_address.lower() == NATIVE_TOKEN_ADDRESS:
+        token_address_to_check = NATIVE_TOKEN_ADDRESS
+    else:
+        token_address_to_check = Web3.to_checksum_address(token_address)
+
+    for enabled_token in tokens_list:
+        if token_address_to_check == enabled_token['address']:
+            return (
+                amount <= enabled_token['maximumAmount'],
+                enabled_token['maximumAmount']
+            )
+
+    raise ValueError(
+        'Token address not supported',
+        token_address,
+        'supported tokens',
+        " ".join(list(map(lambda x: x['address'], tokens_list)))
+    )
 
 
 def get_balance(w3, address, format='ether'):
     balance = w3.eth.get_balance(address)
     return w3.from_wei(balance, format)
+
+
+def setup_logger(log_level):
+    # Set logger
+    logging.basicConfig(level=log_level)
+
+
+def print_info(w3, config):
+    faucet_native_balance = get_balance(w3, config['FAUCET_ADDRESS'])
+    logging.info("="*60)
+    logging.info("RPC_URL        = " + config['FAUCET_RPC_URL'])
+    logging.info("FAUCET ADDRESS = " + config['FAUCET_ADDRESS'])
+    logging.info("FAUCET BALANCE = %d %s" % (faucet_native_balance, config['FAUCET_CHAIN_NAME']))
+    logging.info("="*60)
 
 
 def create_app():
@@ -38,16 +83,9 @@ def create_app():
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(app.config['FAUCET_PRIVATE_KEY']))
 
     cache = Cache(app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'])
-    faucet_balance = get_balance(w3, app.config['FAUCET_ADDRESS'])
 
-    # Set logger
-    logging.basicConfig(level=logging.INFO)
-    logging.info("="*60)
-    logging.info("RPC_URL        = " + app.config['FAUCET_RPC_URL'])
-    logging.info("FAUCET ADDRESS = " + app.config['FAUCET_ADDRESS'])
-    logging.info("FAUCET BALANCE = %d %s" % (faucet_balance, app.config['FAUCET_CHAIN_NATIVE_TOKEN_SYMBOL']))
-    logging.info("="*60)
-
+    setup_logger(logging.INFO)
+    print_info(w3, app.config)
 
     @apiv1.route("/status")
     def status():
@@ -56,18 +94,11 @@ def create_app():
 
     @apiv1.route("/info")
     def info():
-        enabled_tokens = []
-        enabled_tokens.extend(app.config['FAUCET_ENABLED_TOKENS'])
-        enabled_tokens.append(
-            {
-                'name': app.config['FAUCET_CHAIN_NATIVE_TOKEN_SYMBOL'],
-                'address': 'native'
-            }
-        )
         return jsonify(
-            enabledTokens=enabled_tokens,
-            maximumAmount=app.config['FAUCET_AMOUNT'],
-            chainId=app.config['FAUCET_CHAIN_ID']
+            enabledTokens=app.config['FAUCET_ENABLED_TOKENS'],
+            chainId=app.config['FAUCET_CHAIN_ID'],
+            chainName=app.config['FAUCET_CHAIN_NAME'],
+            faucetAddress=app.config['FAUCET_ADDRESS']
         ), 200
 
 
@@ -103,8 +134,14 @@ def create_app():
             validation_errors.append('tokenAddress: invalid token address'), 400
 
         amount = request_data.get('amount', None)
-        if not amount or float(amount) > app.config['FAUCET_AMOUNT']:
-            validation_errors.append('amount: a valid amount must be specified and must be less or equals to %s' % app.config['FAUCET_AMOUNT'])
+
+        try:
+            amount_valid, amount_limit = is_amount_valid(amount, token_address, app.config['FAUCET_ENABLED_TOKENS'])
+            if not amount_valid:
+                validation_errors.append('amount: a valid amount must be specified and must be less or equals to %s' % amount_limit)
+        except ValueError as e:
+            message = "".join([arg for arg in e.args])
+            validation_errors.append(message)
 
         if len(validation_errors) > 0:
             return jsonify(errors=validation_errors), 400

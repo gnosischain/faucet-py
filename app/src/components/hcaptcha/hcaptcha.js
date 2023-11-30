@@ -10,7 +10,8 @@ import {
   Select,
   MenuItem,
   useMediaQuery,
-  InputLabel
+  FormControl,
+  FormLabel
 } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -28,6 +29,7 @@ export const HCaptchaForm = function () {
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [chainId, setChainId] = useState(null);
+  const [chainName, setChainName] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [tokenAddress, setTokenAddress] = useState("");
   const [enabledTokens, setEnabledTokens] = useState([]);
@@ -42,8 +44,8 @@ export const HCaptchaForm = function () {
     getFaucetInfo()
       .then((response) => {
         setChainId(response.data.chainId);
+        setChainName(response.data.chainName);
         setEnabledTokens(response.data.enabledTokens);
-        setTokenAmount(response.data.maximumAmount);
       })
       .catch((error) => {
         toast.error(error);
@@ -56,6 +58,14 @@ export const HCaptchaForm = function () {
 
   const handleTokenChange = (event) => {
     setTokenAddress(event.target.value);
+
+    // Set token amount
+    for (let idx in enabledTokens) {
+      if (enabledTokens[idx].address.toLowerCase() == event.target.value.toLowerCase()) {
+        setTokenAmount(enabledTokens[idx].maximumAmount)
+        break;
+      }
+    }
   };
 
   const isTabletOrMobile = useMediaQuery("(max-width:960px)");
@@ -157,7 +167,7 @@ export const HCaptchaForm = function () {
         component="h2"
         align="center"
         gutterBottom={true}>
-        Gnosis Faucet
+        {chainName} Faucet
       </Typography>
 
       <Typography
@@ -172,35 +182,41 @@ export const HCaptchaForm = function () {
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <InputLabel id="input-wallet-address-label">Wallet address</InputLabel>
-              <TextField
-                onChange={handleWalletAddressChange}
-                value={walletAddress}
-                id="wallet-address"
-                labelid="input-wallet-address-label"
-                fullWidth
-              />
+              <FormControl fullWidth>
+                <FormLabel component="legend">Wallet address</FormLabel>
+                <TextField
+                  onChange={handleWalletAddressChange}
+                  value={walletAddress}
+                  id="wallet-address"
+                  labelid="input-wallet-address-label"
+                  fullWidth
+                />
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <InputLabel id="select-token-label">Token</InputLabel>
-              <Select value={tokenAddress} onChange={handleTokenChange} labelid="select-token-label">
-                {enabledTokens?.map((item) => {
-                  return (
-                    <MenuItem key={item.address} value={item.address}>
-                      {item.name}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
+              <FormControl sx={{ minWidth: 120 }} size="small">
+                <FormLabel component="legend">Choose token</FormLabel>
+                <Select value={tokenAddress} onChange={handleTokenChange} labelid="select-token-label" autowidth="true">
+                  {enabledTokens?.map((item) => {
+                    return (
+                      <MenuItem key={item.address} value={item.address}>
+                        <b>{item.name}</b>&nbsp;{item.maximumAmount} day
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <Button
-                disabled={!captchaVerified || !walletAddress}
-                variant="outlined"
-                onClick={() => sendRequest()}
-              >
-                Claim
-              </Button>
+              <FormControl autowidth="true">
+                <Button
+                  disabled={!captchaVerified || !walletAddress}
+                  variant="outlined"
+                  onClick={() => sendRequest()}
+                >
+                  Claim
+                </Button>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               {showCaptcha()}
