@@ -1,4 +1,5 @@
 from secrets import token_bytes
+import json
 
 from api.const import NATIVE_TOKEN_ADDRESS
 
@@ -21,7 +22,7 @@ TEMP_ENV_VARS = {
     'FAUCET_CHAIN_ID': '100000',
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
     'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '1',
-    'FAUCET_ENABLED_TOKENS': FAUCET_ENABLED_TOKENS,
+    'FAUCET_ENABLED_TOKENS': json.dumps(FAUCET_ENABLED_TOKENS),
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }
 

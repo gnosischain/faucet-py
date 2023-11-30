@@ -1,31 +1,31 @@
 from api import create_app
-from api.services import RateLimitStrategy, Strategy
+from api.services import Strategy
 
 import pytest
+import os
 from conftest import api_prefix
 # from mock import patch
 from temp_env_var import TEMP_ENV_VARS, NATIVE_TRANSFER_TX_HASH, TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS, CAPTCHA_TEST_RESPONSE_TOKEN, NATIVE_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS, ERC20_TOKEN_ADDRESS
 
 
 class BaseTest:
-    def _mock(self, mocker):
+    def _mock(self, mocker, env_variables=None):
         # Mock values
         mocker.patch('api.api.claim_native', return_value=NATIVE_TRANSFER_TX_HASH)
         mocker.patch('api.api.claim_token', return_value=TOKEN_TRANSFER_TX_HASH)
+        mocker.patch('api.api.print_info', return_value=None)
+        mocker.patch('api.api.captcha_verify', return_value=True)
+        if env_variables:
+            mocker.patch.dict(os.environ, env_variables)
         return mocker
     
-    def _create_app(self, env_vars=None):
-        # Instantiate app
-        app = create_app()
-        if env_vars:
-            # Override configs
-            app.config.update(env_vars)
-        return app
+    def _create_app(self):
+        return create_app()
 
     @pytest.fixture
     def app(self, mocker):
-        mocker = self._mock(mocker)
-        app = self._create_app(TEMP_ENV_VARS)
+        mocker = self._mock(mocker, TEMP_ENV_VARS)
+        app = self._create_app()
         yield app
 
     @pytest.fixture
@@ -34,7 +34,7 @@ class BaseTest:
     
 
 class TestAPI(BaseTest):
-    def test_status_route(self, app, client):
+    def test_status_route(self, client):
         response = client.get(api_prefix + '/status')
         assert response.status_code == 200
         assert response.get_json().get('status') == 'ok'
@@ -135,18 +135,16 @@ class TestAPI(BaseTest):
 
 
 class TestAPIWithIPLimitStrategy(BaseTest):
+
     @pytest.fixture
     def app(self, mocker):
-        mocker = self._mock(mocker)
-
         # Set rate limit strategy to IP
-        rate_limit_strategy = RateLimitStrategy()
-        rate_limit_strategy.strategy = Strategy.ip.value
-
         env_vars = TEMP_ENV_VARS.copy()
-        env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = rate_limit_strategy
+        env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = Strategy.ip.value
 
-        app = self._create_app(env_vars)
+        mocker = self._mock(mocker, env_vars)
+
+        app = self._create_app()
         yield app
 
     def test_ask_route_limit_by_ip(self, client):
