@@ -5,7 +5,7 @@ import pytest
 import os
 from conftest import api_prefix
 # from mock import patch
-from temp_env_var import TEMP_ENV_VARS, NATIVE_TRANSFER_TX_HASH, TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS, CAPTCHA_TEST_RESPONSE_TOKEN, NATIVE_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS, ERC20_TOKEN_ADDRESS
+from temp_env_var import TEMP_ENV_VARS, NATIVE_TRANSFER_TX_HASH, TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS, CAPTCHA_TEST_RESPONSE_TOKEN, NATIVE_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS, ERC20_TOKEN_AMOUNT, ERC20_TOKEN_ADDRESS
 
 
 class BaseTest:
@@ -79,6 +79,15 @@ class TestAPI(BaseTest):
             'amount': NATIVE_TOKEN_AMOUNT + 1,
             'recipient': 'not an address',
             'tokenAddress': NATIVE_TOKEN_ADDRESS
+        })
+        assert response.status_code == 400
+
+        response = client.post(api_prefix + '/ask', json={
+            'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
+            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
+            'amount': ERC20_TOKEN_AMOUNT,
+            'recipient': '0x00000123',
+            'tokenAddress': ERC20_TOKEN_ADDRESS
         })
         assert response.status_code == 400
 
