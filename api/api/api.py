@@ -160,6 +160,9 @@ def create_app():
         
         amount_wei = w3.to_wei(amount, 'ether')
         try:
+            # convert to checksum address
+            recipient = w3.to_checksum_address(recipient)
+
             if token_address == 'native':
                 tx_hash = claim_native(w3, app.config['FAUCET_ADDRESS'], recipient, amount_wei)
             else:
