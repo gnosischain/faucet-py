@@ -1,9 +1,9 @@
-from secrets import token_bytes
 import json
+from secrets import token_bytes
 
 from api.const import NATIVE_TOKEN_ADDRESS
 
-ZERO_ADDRESS = "0x" + '0'*40
+ZERO_ADDRESS = "0x" + '0' * 40
 
 NATIVE_TOKEN_AMOUNT = 0.1
 ERC20_TOKEN_AMOUNT = 0.5
@@ -21,7 +21,7 @@ TEMP_ENV_VARS = {
     'FAUCET_RPC_URL': 'http://localhost:8545',
     'FAUCET_CHAIN_ID': '100000',
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
-    'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '1',
+    'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '10',
     'FAUCET_ENABLED_TOKENS': json.dumps(FAUCET_ENABLED_TOKENS),
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }

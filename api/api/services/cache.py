@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from cachetools import TTLCache
 
 
@@ -12,15 +13,15 @@ class Cache:
         if not cached:
             self.cache[address] = datetime.now()
         return cached
-    
+
     def limit_by_ip(self, ip):
         cached = self.cache.get(ip, False)
         if not cached:
             self.cache[ip] = datetime.now()
-        return cached      
-    
+        return cached 
+
     def delete(self, attr):
-       self.cache.pop(attr)
+        self.cache.pop(attr)
 
     def clear(self):
         self.cache.clear()

@@ -1,24 +1,28 @@
-from api import create_app
-from api.services import Strategy
+import os
 
 import pytest
-import os
 from conftest import api_prefix
 # from mock import patch
-from temp_env_var import TEMP_ENV_VARS, NATIVE_TRANSFER_TX_HASH, TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS, CAPTCHA_TEST_RESPONSE_TOKEN, NATIVE_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS, ERC20_TOKEN_AMOUNT, ERC20_TOKEN_ADDRESS
+from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN, ERC20_TOKEN_ADDRESS,
+                          ERC20_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS,
+                          NATIVE_TOKEN_AMOUNT, NATIVE_TRANSFER_TX_HASH,
+                          TEMP_ENV_VARS, TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS)
+
+from api import create_app
+from api.services import Strategy
 
 
 class BaseTest:
     def _mock(self, mocker, env_variables=None):
         # Mock values
-        mocker.patch('api.api.claim_native', return_value=NATIVE_TRANSFER_TX_HASH)
-        mocker.patch('api.api.claim_token', return_value=TOKEN_TRANSFER_TX_HASH)
+        mocker.patch('api.routes.claim_native', return_value=NATIVE_TRANSFER_TX_HASH)
+        mocker.patch('api.routes.claim_token', return_value=TOKEN_TRANSFER_TX_HASH)
+        mocker.patch('api.routes.captcha_verify', return_value=True)
         mocker.patch('api.api.print_info', return_value=None)
-        mocker.patch('api.api.captcha_verify', return_value=True)
         if env_variables:
             mocker.patch.dict(os.environ, env_variables)
         return mocker
-    
+
     def _create_app(self):
         return create_app()
 
@@ -31,9 +35,10 @@ class BaseTest:
     @pytest.fixture
     def client(self, app):
         return app.test_client()
-    
+
 
 class TestAPI(BaseTest):
+
     def test_status_route(self, client):
         response = client.get(api_prefix + '/status')
         assert response.status_code == 200
@@ -118,6 +123,7 @@ class TestAPI(BaseTest):
             'recipient': ZERO_ADDRESS,
             'tokenAddress': NATIVE_TOKEN_ADDRESS
         })
+        print(response.get_json())
         assert response.status_code == 200
         assert response.get_json().get('transactionHash') == NATIVE_TRANSFER_TX_HASH
 
@@ -128,7 +134,7 @@ class TestAPI(BaseTest):
             'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
             'amount': NATIVE_TOKEN_AMOUNT,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': '0x' + '1'*40
+            'tokenAddress': '0x' + '1' * 40
         })
         assert response.status_code == 400
 

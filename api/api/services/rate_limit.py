@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Strategy(Enum):
     ip = 'IP'
     address = 'ADDRESS'
@@ -10,7 +11,6 @@ class RateLimitStrategy:
     _strategies = set([Strategy.ip.value, Strategy.address.value, Strategy.ip_and_address.value])
     _strategy = None
     _default_strategy = Strategy.address.value
-
 
     @property
     def default_strategy(self):

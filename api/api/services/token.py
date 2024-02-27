@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 
 class Token:
@@ -13,7 +13,7 @@ class Token:
         erc20_filepath = os.path.join(os.path.dirname(__file__), "../ABI/erc20.json")
         with open(erc20_filepath, "r") as file:
             return json.load(file)
-        
+
     def transfer(self, sender_address, recipient_address, amount_wei):
         transfer_tx = self.contract.functions.transfer(
             recipient_address,
