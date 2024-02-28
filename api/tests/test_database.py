@@ -6,8 +6,6 @@ from api.utils import generate_access_key
 
 class TestDatabase(BaseTest):
 
-    # db.create_all()  # Create database tables for our data models
-
     def test_models(self, client):
         access_key_id, secret_access_key = generate_access_key()
         assert len(access_key_id) == 16

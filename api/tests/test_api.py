@@ -127,8 +127,8 @@ class TestCliAPI(BaseTest):
     def test_ask_route_parameters(self, client):
         access_key_id, secret_access_key = generate_access_key()
         http_headers = {
-            'FAUCET_ACCESS_KEY_ID': access_key_id,
-            'FAUCET_SECRET_ACCESS_KEY': secret_access_key
+            'X-faucet-access-key-id': access_key_id,
+            'X-faucet-secret-access-key': secret_access_key
         }
 
         response = client.post(api_prefix + '/cli/ask', json={})
