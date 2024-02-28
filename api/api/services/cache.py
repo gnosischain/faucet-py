@@ -18,7 +18,7 @@ class Cache:
         cached = self.cache.get(ip, False)
         if not cached:
             self.cache[ip] = datetime.now()
-        return cached 
+        return cached
 
     def delete(self, attr):
         self.cache.pop(attr)

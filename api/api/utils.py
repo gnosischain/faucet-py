@@ -1,3 +1,5 @@
+import secrets
+
 from web3 import Web3
 
 from .const import NATIVE_TOKEN_ADDRESS
@@ -56,3 +58,9 @@ def is_amount_valid(amount, token_address, tokens_list):
         'supported tokens',
         " ".join(list(map(lambda x: x['address'], tokens_list)))
     )
+
+
+def generate_access_key():
+    access_key_id = secrets.token_hex(8)  # returns a 16 chars long string
+    secret_access_key = secrets.token_hex(16)  # returns a 32 chars long string
+    return access_key_id, secret_access_key

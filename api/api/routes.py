@@ -3,6 +3,7 @@ from web3 import Web3
 
 from .services import (Strategy, Web3Singleton, captcha_verify, claim_native,
                        claim_token)
+from .services.database import AccessKey
 from .utils import is_amount_valid, is_token_enabled
 
 apiv1 = Blueprint("version1", "version1")
@@ -23,7 +24,7 @@ def info():
     ), 200
 
 
-def ask_route_validation(request_data, validate_captcha):
+def _ask_route_validation(request_data, validate_captcha):
     validation_errors = []
 
     # Captcha validation
@@ -66,10 +67,8 @@ def ask_route_validation(request_data, validate_captcha):
     return validation_errors, amount, recipient, token_address
 
 
-@apiv1.route("/ask", methods=["POST"])
-def ask():
-    request_data = request.get_json()
-    validation_errors, amount, recipient, token_address = ask_route_validation(request_data, validate_captcha=True)
+def _ask(request_data, validate_captcha):
+    validation_errors, amount, recipient, token_address = _ask_route_validation(request_data, validate_captcha)
 
     if len(validation_errors) > 0:
         return jsonify(errors=validation_errors), 400
@@ -105,22 +104,27 @@ def ask():
         return jsonify(errors=[message]), 400
 
 
-# @apiv1.route("/cli/ask", methods=["POST"])
-# def cli_ask():
-#     access_key_id = request.headers.get('FAUCET_ACCESS_KEY_ID', None)
-#     secret_key = request.headers.get('FAUCET_SECRET_KEY', None)
-
-#     validation_errors = []
-
-#     if not access_key_id or not secret_key:
-#         validation_errors.append('Missing authentication headers')
-#         return jsonify(errors=validation_errors), 400
+@apiv1.route("/ask", methods=["POST"])
+def ask():
+    return _ask(request.get_json(), validate_captcha=True)
 
 
-#     db_conn = DatabaseSingleton(app.config['FAUCET_DATABASE_NAME']).get_connection()
-#     # validate auth
-#     db_result = db_conn.execute("SELECT enabled FROM auth_keys WHERE access_key_id='%s' AND secret_key='%s'" % (access_key_id, secret_key))
+@apiv1.route("/cli/ask", methods=["POST"])
+def cli_ask():
+    access_key_id = request.headers.get('FAUCET_ACCESS_KEY_ID', None)
+    secret_access_key = request.headers.get('FAUCET_SECRET_ACCESS_KEY', None)
 
-#     if not db_result or db_result['enabled'] == False:
-#         validation_errors.append('Access denied')
-#         return jsonify(errors=validation_errors), 403
+    validation_errors = []
+
+    if not access_key_id and not secret_access_key:
+        validation_errors.append('Missing authentication headers')
+        return jsonify(errors=validation_errors), 400
+
+    # Fetch data from DB
+    access_key = AccessKey.query.filter_by(access_key_id=access_key_id, secret_access_key=secret_access_key).first()
+
+    if not access_key or not access_key.enabled:
+        validation_errors.append('Access denied')
+        return jsonify(errors=validation_errors), 403
+
+    return _ask(request.get_json(), validate_captcha=False)

@@ -9,7 +9,7 @@ def test_cache():
     cache = Cache(limit_seconds)
     cache.clear()
     cached = cache.limit_by_address(address)
-    assert cached == False
+    assert cached is False
 
     cached = cache.limit_by_address(address)
     assert isinstance(cached, datetime)
