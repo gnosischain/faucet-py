@@ -1,15 +1,13 @@
 from conftest import BaseTest
-# from mock import patch
-from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN, ERC20_TOKEN_ADDRESS,
-                          ERC20_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS,
-                          NATIVE_TOKEN_AMOUNT, NATIVE_TRANSFER_TX_HASH,
-                          TEMP_ENV_VARS, TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS)
 
 from api.services.database import AccessKey
 from api.utils import generate_access_key
 
 
 class TestDatabase(BaseTest):
+
+    # db.create_all()  # Create database tables for our data models
+
     def test_models(self, client):
         access_key_id, secret_access_key = generate_access_key()
         assert len(access_key_id) == 16

@@ -2,10 +2,11 @@ import logging
 
 from flask import Flask
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 from .routes import apiv1
 from .services import Cache, Web3Singleton
-from .services.database import db, migrate
+from .services.database import db
 
 
 def setup_logger(log_level):
@@ -39,8 +40,7 @@ def create_app():
 
     with app.app_context():
         db.init_app(app)
-        migrate.init_app(app, db)
-        db.create_all()  # Create database tables for our data models
+        Migrate(app, db)
 
     # Initialize Web3 class
     w3 = Web3Singleton(app.config['FAUCET_RPC_URL'], app.config['FAUCET_PRIVATE_KEY'])
