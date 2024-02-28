@@ -34,6 +34,15 @@ cd api
 python3 -m pytest -s
 ```
 
+#### Run Flake8 and isort
+
+```
+cd api
+python3 install -r requiremenets-dev.txt
+isort **/*.py --atomic
+python3 -m flake8
+```
+
 ### ReactJS Frontend
 
 ```

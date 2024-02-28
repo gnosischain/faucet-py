@@ -1,1 +1,1 @@
-NATIVE_TOKEN_ADDRESS='native'
+NATIVE_TOKEN_ADDRESS = 'native'
