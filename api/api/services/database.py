@@ -1,10 +1,8 @@
 import sqlite3
 
-from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-migrate = Migrate()
 
 
 class Database:
@@ -68,8 +66,8 @@ class BaseModel(db.Model):
 class AccessKey(BaseModel):
     __tablename__ = "access_keys"
     access_key_id = db.Column(db.String(16), primary_key=True)
-    secret_access_key = db.Column(db.String(32))
-    enabled = db.Column(db.Boolean(), default=True)
+    secret_access_key = db.Column(db.String(32), nullable=False)
+    enabled = db.Column(db.Boolean(), default=True, nullable=False)
 
     def __repr__(self):
         return f"<Access Key {self.access_key_id}>"
