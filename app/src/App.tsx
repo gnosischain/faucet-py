@@ -76,8 +76,7 @@ function App(): JSX.Element {
           <h1>{title}</h1>
           <h2>{subtitle}</h2>
         </div>
-        <Faucet enabledTokens={enabledTokens}/>
-        {/* <HCaptchaForm/> */}
+        <Faucet chainId={chainId} enabledTokens={enabledTokens}/>
       </div>
     </>
   );

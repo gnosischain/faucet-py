@@ -20,6 +20,12 @@
   align-self: flex-start;
 }
 
+@media (max-width: 520px) {
+  .app-logo {
+    max-height: 20px;
+  }
+}
+
 .Toastify__toast {
   font-size: 16px;
   font-family: Roboto, Helvetica, Arial, sans-serif;
@@ -30,6 +36,24 @@
   flex-direction: column;
   align-items: center;
   font-family: "GT Planar", sans-serif;
+  background-image: url("../images/Faucet_BG.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  backdrop-filter: contrast(0.5);
+  padding: 10px;
+  min-height: 100vh;
+}
+
+.app-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #00000080;
+  z-index: -1;
 }
 
 .title {
@@ -57,7 +81,11 @@
 }
 
 @media (max-width: 900px) {
-  h1 {
+  .title h1 {
     font-size: 3rem;
+  }
+
+  .title h2 {
+    font-size: 2rem;
   }
 }
