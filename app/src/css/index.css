@@ -6,9 +6,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  background-color: rgb(236, 230, 214);
-  color: rgb(33, 65, 50);
+  /* color: rgb(33, 65, 50); */
   font-size: calc(10px + 2vmin);
+  height: 100vh;
+  background-image: url("../images/Faucet_BG.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #00000080;
+  z-index: -1;
 }
 
 code {

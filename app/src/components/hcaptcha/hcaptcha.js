@@ -18,7 +18,7 @@ import CardContent from "@mui/material/CardContent";
 
 import axios from "axios";
 import { toast } from "react-toastify";
-import Loading from "../loading/loading";
+import Loading from "../Loading/Loading";
 
 import "./hcaptcha.css";
 
