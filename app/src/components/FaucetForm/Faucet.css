@@ -104,6 +104,10 @@
   background-color: #f0713b;
 }
 
+.faucet-container button:disabled {
+  background-color: #dd71439e;
+}
+
 .success {
   margin-top: 2rem;
 }
@@ -111,9 +115,9 @@
 .success div {
   color: #f0ebde;
   margin: 0.2rem 0;
+  word-break: break-all;
 }
 
 .success a {
-  word-break: break-all;
   color: #f0ebde;
 }

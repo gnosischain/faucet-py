@@ -1,31 +1,30 @@
-/* eslint-disable */
-import { useState, ChangeEvent, FormEvent, useEffect } from "react"
+import { useState, useRef, ChangeEvent, FormEvent, useEffect, Dispatch, SetStateAction } from "react"
 import "./Faucet.css"
 import { toast } from "react-toastify"
 import axios from "axios"
 import Captcha from "../Captcha/Captcha"
 import TokenSelect, { Token } from "../TokenSelect/TokenSelect"
+import HCaptcha from "@hcaptcha/react-hcaptcha"
 
 interface FaucetProps {
   enabledTokens: Token[],
-  chainId: string
+  chainId: string,
+  setLoading: Dispatch<SetStateAction<boolean>>
 }
 
-function Faucet({ enabledTokens, chainId }: FaucetProps): JSX.Element {
-  const [walletAddress, setWalletAddress] = useState("")
+function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Element {
+  const [walletAddress, setWalletAddress] = useState<string>("")
   const [token, setToken] = useState<Token | null>(null)
-
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
   const [txHash, setTxHash] = useState<string | null>(null)
+  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth)
 
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const captchaRef = useRef<HCaptcha>(null)
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
   }, [])
 
   const handleChangeAddress = (event: ChangeEvent<HTMLInputElement>) => {
@@ -42,46 +41,44 @@ function Faucet({ enabledTokens, chainId }: FaucetProps): JSX.Element {
 
     const apiURL = `${process.env.REACT_APP_FAUCET_API_URL}/ask`
 
-    setTxHash("0xb241d0f92fff78f01f9f3410593294191be6dab323c3844f668d466dea835801")
-    toast.success(`Token sent to your wallet address. Hash: 0xlkdjflskjfl`)
+    if (token) {
+      console.log({ captchaToken })
+      setLoading(true)
+      try {
+        const req = {
+          recipient: walletAddress,
+          captcha: captchaToken,
+          tokenAddress: token.address,
+          chainId: chainId,
+          amount: token.maximumAmount
+        }
 
-    // if (token) {
-    //   try {
-    //     setLoading(true)
-    //     const req = {
-    //       recipient: walletAddress,
-    //       captcha: captchaToken,
-    //       tokenAddress: token.address,
-    //       chainId: chainId,
-    //       amount: token.maximumAmount
-    //     }
+        axios
+          .post(apiURL, req)
+          .then((response) => {
+            setWalletAddress("")
+            setToken(null)
 
-    //     axios
-    //       .post(apiURL, req)
-    //       .then((response) => {
-    //         setLoading(false)
-    //         setWalletAddress("")
-    //         // Reset captcha
-    //         // setCaptchaVerified(true)
-    //         // captchaRef.current?.resetCaptcha()
+            // Reset captcha
+            setCaptchaToken("")
+            captchaRef.current?.resetCaptcha()
 
-    //         setToken(null)
-
-    //         toast.success(`Token sent to your wallet address. Hash: ${response.data.transactionHash}`)
-    //         setTxInfo(`Token sent to your wallet address. Hash: ${response.data.transactionHash}`)
-    //       })
-    //       .catch((error) => {
-    //         setLoading(false)
-    //         console.log(error)
-    //         // toast.error(formatErrors(error.response.data.errors))
-    //       })
-    //   } catch (error) {
-    //     setLoading(false)
-    //     if (error instanceof Error) {
-    //       toast.error(error.message)
-    //     }
-    //   }
-    // }
+            toast.success("Token sent to your wallet address")
+            setTxHash(`${response.data.transactionHash}`)
+          })
+          .catch((error) => {
+            console.log(error)
+            toast.error(error.message ?? "Network error")
+          })
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error(error.message)
+        }
+      } finally {
+        // setLoading(false)
+        setTimeout(()=> {setLoading(false)}, 2000)
+      }
+    }
   }
   
   return (
@@ -112,9 +109,13 @@ function Faucet({ enabledTokens, chainId }: FaucetProps): JSX.Element {
         </div>
       </div>
       <div className="flex-row flex-row-captcha">
-        <Captcha setCaptchaToken={setCaptchaToken} windowWidth={windowWidth}/>
+        <Captcha
+          setCaptchaToken={setCaptchaToken}
+          windowWidth={windowWidth}
+          captchaRef={captchaRef}
+        />
       </div>
-      <button type="submit">
+      <button type="submit" disabled={!captchaToken}>
         Claim
       </button>
       {txHash &&
@@ -122,7 +123,11 @@ function Faucet({ enabledTokens, chainId }: FaucetProps): JSX.Element {
           <div>Token sent to your wallet address. Hash: </div> 
           <div>
             {chainId === "100"
-              ? <a target="_blank" href={`https://gnosisscan.io/tx/${txHash}`}>{txHash}</a>
+              ? <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={`https://gnosisscan.io/tx/${txHash}`}
+                >{txHash}</a>
               : txHash
             }
           </div>

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Dispatch, SetStateAction } from "react"
 import Select, { StylesConfig } from "react-select"
 
@@ -29,10 +28,10 @@ function TokenSelect ({ enabledTokens, token, setToken, windowWidth }: TokenSele
 
   const handleChangeToken = (option: Token | null) => {
     if (option) {
-      for (let idx in enabledTokens) {
+      for (const idx in enabledTokens) {
         if (enabledTokens[idx].address.toLowerCase() == option.address.toLowerCase()) {
           setToken({
-            address: option?.address || "",
+            address: option.address,
             name: option.name,
             maximumAmount: Number(enabledTokens[idx].maximumAmount)
           })
