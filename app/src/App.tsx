@@ -22,8 +22,6 @@ function App(): JSX.Element {
     return axios.get(`${process.env.REACT_APP_FAUCET_API_URL}/info`)
   }
 
-  // console.log(enabledTokens.length)
-
   useEffect(() => {
     getFaucetInfo()
       .then((response) => {
@@ -34,10 +32,6 @@ function App(): JSX.Element {
         toast.error("Network error")
       })
       .finally(() => {
-        // setTimeout(()=> {
-        //   setLoading(false)
-        //   setFaucetLoading(false)
-        // }, 2000)
         setFaucetLoading(false)
         setLoading(false)
       })
@@ -47,19 +41,6 @@ function App(): JSX.Element {
   const subtitle = faucetLoading
     ? "Loading..."
     : (chainId === "100" ? "Faucet" : "Testnet Faucet")
-
-  // const enabledTokens1 = [
-  //   {
-  //     address: "0x01",
-  //     name: "GNO",
-  //     maximumAmount: 2,
-  //   },
-  //   {
-  //     address: "0x02",
-  //     name: "xDAI",
-  //     maximumAmount: 10,
-  //   }
-  // ]
   
   return (
     <>
