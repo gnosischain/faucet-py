@@ -20,7 +20,6 @@
 .flex-row {
   display: flex;
   flex-direction: row;
-  /* min-height: 56px; */
   width: 100%;
   align-items: center;
   flex-wrap: wrap;
@@ -103,4 +102,18 @@
 
 .faucet-container button:hover {
   background-color: #f0713b;
+}
+
+.success {
+  margin-top: 2rem;
+}
+
+.success div {
+  color: #f0ebde;
+  margin: 0.2rem 0;
+}
+
+.success a {
+  word-break: break-all;
+  color: #f0ebde;
 }

@@ -28,7 +28,11 @@
 
 .Toastify__toast {
   font-size: 16px;
-  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-family: "GT Planar", Helvetica, Arial, sans-serif !important;
+}
+
+.Toastify__close-button {
+  align-self: center !important;
 }
 
 .app-container {

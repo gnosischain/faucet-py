@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import logo from "./images/logo.svg"
 import "./css/App.css";
-// import { HCaptchaForm } from "./components/hcaptcha/hcaptcha";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
@@ -22,6 +21,7 @@ function App(): JSX.Element {
     return axios.get(`${process.env.REACT_APP_FAUCET_API_URL}/info`);
   };
 
+  // console.log(enabledTokens)
 
   useEffect(() => {
     getFaucetInfo()
@@ -43,7 +43,7 @@ function App(): JSX.Element {
     ? "Loading faucet..."
     : (chainId === "100" ? "Faucet" : "Testnet Faucet")
 
-  const enabledTokens = [
+  const enabledTokens1 = [
     {
       address: "0x01",
       name: "GNO",
@@ -59,13 +59,11 @@ function App(): JSX.Element {
   return (
     <>
       <ToastContainer
-        position="top-right"
-        autoClose={false}
-        hideProgressBar={false}
+        position="bottom-right"
+        hideProgressBar={true}
         newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
+        closeOnClick={true}
+        // pauseOnFocusLoss
         draggable
         pauseOnHover
       />
@@ -76,7 +74,7 @@ function App(): JSX.Element {
           <h1>{title}</h1>
           <h2>{subtitle}</h2>
         </div>
-        <Faucet chainId={chainId} enabledTokens={enabledTokens}/>
+        <Faucet chainId={"100"} enabledTokens={enabledTokens1}/>
       </div>
     </>
   );
