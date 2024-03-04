@@ -27,6 +27,10 @@ function App(): JSX.Element {
       .then((response) => {
         setChainId(response.data.chainId)
         setEnabledTokens(response.data.enabledTokens)
+
+        const chain = chainName[response.data.chainId]
+        document.title = `${chain} Faucet`
+        document.querySelector('meta[name="description"]')?.setAttribute("content", `Faucet for ${chain} chain`)
       })
       .catch(() => {
         toast.error("Network error")
