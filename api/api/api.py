@@ -25,7 +25,7 @@ def print_info(w3, config):
     logging.info("=" * 60)
     logging.info("RPC_URL        = " + config['FAUCET_RPC_URL'])
     logging.info("FAUCET ADDRESS = " + config['FAUCET_ADDRESS'])
-    logging.info("FAUCET BALANCE = %d %s" % (w3.from_wei(faucet_native_balance, 'ether'), config['FAUCET_CHAIN_NAME']))
+    # logging.info("FAUCET BALANCE = %d %s" % (w3.from_wei(faucet_native_balance, 'ether'), config['FAUCET_CHAIN_NAME']))
     logging.info("=" * 60)
 
 

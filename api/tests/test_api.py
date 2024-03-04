@@ -1,9 +1,11 @@
 import pytest
 from conftest import BaseTest, api_prefix
 # from mock import patch
-from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN, ERC20_TOKEN_ADDRESS,
-                          ERC20_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS,
-                          NATIVE_TOKEN_AMOUNT, NATIVE_TRANSFER_TX_HASH,
+from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
+                          DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+                          DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
+                          ERC20_TOKEN_ADDRESS, FAUCET_ENABLED_CHAIN_IDS,
+                          NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH,
                           TEMP_ENV_VARS, TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS)
 
 from api.services import Strategy
@@ -26,7 +28,7 @@ class TestAPI(BaseTest):
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
             'chainId': -1,
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': NATIVE_TOKEN_ADDRESS
         })
@@ -35,8 +37,8 @@ class TestAPI(BaseTest):
         # wrong amount, should return 400
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT + 1,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': NATIVE_TOKEN_ADDRESS
         })
@@ -45,8 +47,8 @@ class TestAPI(BaseTest):
         # missing recipient, should return 400
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT + 1,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'tokenAddress': NATIVE_TOKEN_ADDRESS
         })
         assert response.status_code == 400
@@ -54,8 +56,8 @@ class TestAPI(BaseTest):
         # wrong recipient recipient, should return 400
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT + 1,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'recipient': 'not an address',
             'tokenAddress': NATIVE_TOKEN_ADDRESS
         })
@@ -63,8 +65,8 @@ class TestAPI(BaseTest):
 
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': ERC20_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': '0x00000123',
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
@@ -73,8 +75,8 @@ class TestAPI(BaseTest):
         # missing token address, should return 400
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT + 1,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'recipient': ZERO_ADDRESS
         })
         assert response.status_code == 400
@@ -82,8 +84,8 @@ class TestAPI(BaseTest):
         # wrong token address, should return 400
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT + 1,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': 'non existing token address'
         })
@@ -92,12 +94,11 @@ class TestAPI(BaseTest):
     def test_ask_route_native_transaction(self, client):
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': NATIVE_TOKEN_ADDRESS
         })
-        print(response.get_json())
         assert response.status_code == 200
         assert response.get_json().get('transactionHash') == NATIVE_TRANSFER_TX_HASH
 
@@ -105,8 +106,8 @@ class TestAPI(BaseTest):
         # not supported token, should return 400
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': '0x' + '1' * 40
         })
@@ -114,8 +115,8 @@ class TestAPI(BaseTest):
 
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
@@ -136,8 +137,8 @@ class TestCliAPI(BaseTest):
         assert response.status_code == 400
 
         response = client.post(api_prefix + '/cli/ask', headers=http_headers, json={
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
@@ -148,8 +149,8 @@ class TestCliAPI(BaseTest):
         AccessKey(access_key_id=access_key_id, secret_access_key=secret_access_key).save()
 
         response = client.post(api_prefix + '/cli/ask', headers=http_headers, json={
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
@@ -173,8 +174,8 @@ class TestAPIWithIPLimitStrategy(BaseTest):
         # First request should return 200
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
@@ -183,8 +184,8 @@ class TestAPIWithIPLimitStrategy(BaseTest):
         # Second request should return 429
         response = client.post(api_prefix + '/ask', json={
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
-            'chainId': TEMP_ENV_VARS['FAUCET_CHAIN_ID'],
-            'amount': NATIVE_TOKEN_AMOUNT,
+            'chainId': FAUCET_ENABLED_CHAIN_IDS[0],
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
