@@ -70,3 +70,23 @@ jobs:
             "REACT_APP_HCAPTCHA_SITE_KEY=${{ secrets.PROD_REACT_APP_HCAPTCHA_SITE_KEY }}"
             "REACT_APP_FAUCET_API_URL=${{ secrets.PROD_REACT_APP_FAUCET_API_URL}}"
         
+  eks-deployment-restart:
+    needs:  build-and-push-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.0
+        with:
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.DEV_AWS_EKS_ROLE }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ secrets.DEV_AWS_REGION }}
+
+      - name: Configure kubectl for EKS
+        run: aws eks update-kubeconfig --name ${{ secrets.DEV_AWS_EKS_CLUSTER }} --region ${{ secrets.DEV_AWS_REGION }}
+
+      - name: Restart Bridge Explorer Deployment
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          kubectl config use-context arn:aws:eks:${{ secrets.DEV_AWS_REGION }}:${{ secrets.DEV_AWS_ACCOUNT_ID }}:cluster/${{ secrets.DEV_AWS_EKS_CLUSTER }}
+          kubectl rollout restart deploy/${{ secrets.DEV_AWS_EKS_DEPLOYMENT_UI }} -n ${{ secrets.DEV_AWS_EKS_NAMESPACE }}
