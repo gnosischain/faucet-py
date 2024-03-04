@@ -47,6 +47,7 @@
   backdrop-filter: contrast(0.5);
   padding: 10px;
   min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .app-container::before {
