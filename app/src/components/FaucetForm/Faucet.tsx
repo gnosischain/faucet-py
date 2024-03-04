@@ -27,6 +27,14 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
+  function formatErrors(errors: string[]) {
+    return (
+      <div>
+        { errors.map((item, index) => <div key={index}>{item}</div>)}
+      </div>
+    )
+  }
+
   const handleChangeAddress = (event: ChangeEvent<HTMLInputElement>) => {
     setWalletAddress(event.target.value)
   }
@@ -67,16 +75,14 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
             setTxHash(`${response.data.transactionHash}`)
           })
           .catch((error) => {
-            console.log(error)
-            toast.error(error.message ?? "Network error")
+            toast.error(formatErrors(error.response.data.errors))
           })
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message)
         }
       } finally {
-        // setLoading(false)
-        setTimeout(()=> {setLoading(false)}, 2000)
+        setLoading(false)
       }
     }
   }
