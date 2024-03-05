@@ -2,39 +2,38 @@
 
 A simple python implementation of an EVM compatible faucet.
 
-## API
+## Python API
 
 ### Requirements
 
-Python +3.x, NodeJS v18.x
+Python +3.x
 
-### Python API
+### Installation
 
 ```
 cd api
 python3 -m venv .venv
 . .venv/bin/activate
-pip3 install -r requirements.txt
-
-python3 -m flask --app api run --port 8000
+pip3 install -r requirements-dev.txt
 ```
 
-#### Run application
+### Run application
+
+Check .env.example for reference.
 
 ```
 cd api
 python3 -m flask --app api run --port 8000
 ```
 
-
-#### Run tests
+### Run tests
 
 ```
 cd api
 python3 -m pytest -s
 ```
 
-#### Run Flake8 and isort
+### Run Flake8 and isort
 
 ```
 cd api
@@ -43,7 +42,13 @@ isort **/*.py --atomic
 python3 -m flake8
 ```
 
-### ReactJS Frontend
+## ReactJS Frontend
+
+### Requirements
+
+NodeJS v18.x
+
+### Installation
 
 ```
 nvm use
@@ -52,7 +57,7 @@ cd app
 yarn
 ```
 
-#### Run application
+### Run application
 
 ```
 cd app
