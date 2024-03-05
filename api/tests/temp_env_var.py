@@ -23,7 +23,7 @@ TEMP_ENV_VARS = {
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
     'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '10',
     'FAUCET_ENABLED_TOKENS': json.dumps(FAUCET_ENABLED_TOKENS),
-    'FAUCET_DATABASE_URI': 'sqlite:///:memory',  # run in-memory
+    'FAUCET_DATABASE_URI': 'sqlite:///',  # run in-memory
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }
 

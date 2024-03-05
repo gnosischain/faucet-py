@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from flask_migrate import upgrade
 from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN, ERC20_TOKEN_ADDRESS,
                           ERC20_TOKEN_AMOUNT, NATIVE_TOKEN_ADDRESS,
                           NATIVE_TOKEN_AMOUNT, NATIVE_TRANSFER_TX_HASH,
@@ -31,7 +30,6 @@ class BaseTest:
         mocker = self._mock(mocker, TEMP_ENV_VARS)
         app = self._create_app()
         with app.app_context():
-            upgrade()
             yield app
 
     @pytest.fixture

@@ -2,12 +2,10 @@ import logging
 
 from flask import Flask
 from flask_cors import CORS
-from flask_migrate import Migrate
 
-from .manage import create_access_keys_cmd
 from .routes import apiv1
 from .services import Cache, Web3Singleton
-from .services.database import db
+from .services.database import db, migrate
 
 
 def setup_logger(log_level):
@@ -38,14 +36,13 @@ def create_app():
     app.config['FAUCET_CACHE'] = Cache(app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'])
     # Initialize API Routes
     app.register_blueprint(apiv1, url_prefix="/api/v1")
-    # Add cli commands
-    app.cli.add_command(create_access_keys_cmd)
 
     with app.app_context():
         db.init_app(app)
-        Migrate(app, db)
+        migrate.init_app(app, db)
+        db.create_all()  # Create database tables for our data models
 
-    # Initialize Web3 class for latter usage
+    # Initialize Web3 class
     w3 = Web3Singleton(app.config['FAUCET_RPC_URL'], app.config['FAUCET_PRIVATE_KEY'])
 
     setup_cors(app)

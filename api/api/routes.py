@@ -106,14 +106,13 @@ def _ask(request_data, validate_captcha):
 
 @apiv1.route("/ask", methods=["POST"])
 def ask():
-    data, status_code = _ask(request.get_json(), validate_captcha=True)
-    return data, status_code
+    return _ask(request.get_json(), validate_captcha=True)
 
 
 @apiv1.route("/cli/ask", methods=["POST"])
 def cli_ask():
-    access_key_id = request.headers.get('X-faucet-access-key-id', None)
-    secret_access_key = request.headers.get('X-faucet-secret-access-key', None)
+    access_key_id = request.headers.get('FAUCET_ACCESS_KEY_ID', None)
+    secret_access_key = request.headers.get('FAUCET_SECRET_ACCESS_KEY', None)
 
     validation_errors = []
 
@@ -128,5 +127,4 @@ def cli_ask():
         validation_errors.append('Access denied')
         return jsonify(errors=validation_errors), 403
 
-    data, status_code = _ask(request.get_json(), validate_captcha=False)
-    return data, status_code
+    return _ask(request.get_json(), validate_captcha=False)
