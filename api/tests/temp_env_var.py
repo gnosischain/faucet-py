@@ -1,29 +1,41 @@
 import json
 from secrets import token_bytes
 
-from api.const import NATIVE_TOKEN_ADDRESS
+from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+                       DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, NATIVE_TOKEN_ADDRESS)
 
 ZERO_ADDRESS = "0x" + '0' * 40
 
-NATIVE_TOKEN_AMOUNT = 0.1
-ERC20_TOKEN_AMOUNT = 0.5
 ERC20_TOKEN_ADDRESS = ZERO_ADDRESS
 
 CAPTCHA_TEST_SECRET_KEY = '0x0000000000000000000000000000000000000000'
 CAPTCHA_TEST_RESPONSE_TOKEN = '10000000-aaaa-bbbb-cccc-000000000001'
 
+FAUCET_ENABLED_CHAIN_IDS = [100000]
+
 FAUCET_ENABLED_TOKENS = [
-    {"address": NATIVE_TOKEN_ADDRESS, "name": "Native", "maximumAmount": NATIVE_TOKEN_AMOUNT},
-    {"address": ERC20_TOKEN_ADDRESS, "name": "TestToken", "maximumAmount": ERC20_TOKEN_AMOUNT}
+    {
+        "address": NATIVE_TOKEN_ADDRESS,
+        "name": "Native",
+        "maximumAmount": DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
+        "chainId": FAUCET_ENABLED_CHAIN_IDS[0],
+        "type": "native"
+    },
+    {
+        "address": ERC20_TOKEN_ADDRESS,
+        "name": "TestToken",
+        "maximumAmount": DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+        "chainId": FAUCET_ENABLED_CHAIN_IDS[0],
+        "type": "erc20"
+    }
 ]
 
 TEMP_ENV_VARS = {
     'FAUCET_RPC_URL': 'http://localhost:8545',
-    'FAUCET_CHAIN_ID': '100000',
+    'FAUCET_ENABLED_CHAIN_IDS': ','.join([str(id) for id in FAUCET_ENABLED_CHAIN_IDS]),
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
     'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '10',
-    'FAUCET_ENABLED_TOKENS': json.dumps(FAUCET_ENABLED_TOKENS),
-    'FAUCET_DATABASE_URI': 'sqlite:///',  # run in-memory
+    'FAUCET_DATABASE_URI': 'sqlite://',  # run in-memory
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }
 

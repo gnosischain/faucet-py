@@ -3,8 +3,8 @@ from web3 import Web3
 
 from .services import (Strategy, Web3Singleton, captcha_verify, claim_native,
                        claim_token)
-from .services.database import AccessKey
-from .utils import is_amount_valid, is_token_enabled
+from .services.database import AccessKey, Token, Transaction
+# from .utils import is_amount_valid, is_token_enabled
 
 apiv1 = Blueprint("version1", "version1")
 
@@ -16,10 +16,12 @@ def status():
 
 @apiv1.route("/info")
 def info():
+    enabled_tokens = Token.query.with_entities(Token.name, Token.address,
+                                               Token.chain_id).filter_by(enabled=True).all()
     return jsonify(
-        enabledTokens=current_app.config['FAUCET_ENABLED_TOKENS'],
-        chainId=current_app.config['FAUCET_CHAIN_ID'],
-        chainName=current_app.config['FAUCET_CHAIN_NAME'],
+        enabledTokens=enabled_tokens,
+        # chainId=current_app.config['FAUCET_ENABLED_CHAIN_IDS'],
+        # chainName=current_app.config['FAUCET_CHAIN_NAME'],
         faucetAddress=current_app.config['FAUCET_ADDRESS']
     ), 200
 
@@ -30,12 +32,20 @@ def _ask_route_validation(request_data, validate_captcha):
     # Captcha validation
     if validate_captcha:
         # check hcatpcha
-        catpcha_verified = captcha_verify(request_data.get('captcha'), current_app.config['CAPTCHA_VERIFY_ENDPOINT'], current_app.config['CAPTCHA_SECRET_KEY'])
+        catpcha_verified = captcha_verify(
+            request_data.get('captcha'),
+            current_app.config['CAPTCHA_VERIFY_ENDPOINT'], current_app.config['CAPTCHA_SECRET_KEY']
+        )
+
         if not catpcha_verified:
             validation_errors.append('captcha: validation failed')
 
-    if request_data.get('chainId') != current_app.config['FAUCET_CHAIN_ID']:
-        validation_errors.append('chainId: %s is not supported. Supported chainId: %s' % (request_data.get('chainId'), current_app.config['FAUCET_CHAIN_ID']))
+    if request_data.get('chainId') not in current_app.config['FAUCET_ENABLED_CHAIN_IDS']:
+        validation_errors.append('chainId: %s is not supported. Supported chainIds: %s' % (
+                request_data.get('chainId'),
+                ', '.join([str(x) for x in current_app.config['FAUCET_ENABLED_CHAIN_IDS']])
+            )
+        )
 
     recipient = request_data.get('recipient', None)
     if not Web3.is_address(recipient):
@@ -44,26 +54,33 @@ def _ask_route_validation(request_data, validate_captcha):
     if not recipient or recipient.lower() == current_app.config['FAUCET_ADDRESS']:
         validation_errors.append('recipient: address cant\'t be the Faucet address itself')
 
-    token_address = request_data.get('tokenAddress', None)
-    if not token_address:
-        validation_errors.append('tokenAddress: A valid token address or string \"native\" must be specified')
-
-    try:
-        if not is_token_enabled(token_address, current_app.config['FAUCET_ENABLED_TOKENS']):
-            validation_errors.append('tokenAddress: Token %s is not enabled' % token_address)
-    except:
-        validation_errors.append('tokenAddress: invalid token address'), 400
-
     amount = request_data.get('amount', None)
+    token_address = request_data.get('tokenAddress', None)
 
-    try:
-        amount_valid, amount_limit = is_amount_valid(amount, token_address, current_app.config['FAUCET_ENABLED_TOKENS'])
-        if not amount_valid:
-            validation_errors.append('amount: a valid amount must be specified and must be less or equals to %s' % amount_limit)
-    except ValueError as e:
-        message = "".join([arg for arg in e.args])
-        validation_errors.append(message)
+    if token_address:
+        try:
+            # Clean up Token address
+            if token_address.lower() != 'native':
+                token_address = Web3.to_checksum_address(token_address)
 
+            token = Token.query.with_entities(Token.enabled,Token.max_amount_day).filter_by(
+                address=token_address,
+                chain_id=request_data.get('chainId')).first()
+
+            if token and token[0] is True:
+                if not amount:
+                    validation_errors.append('amount: is required')
+                if amount and amount > token[1]:
+                    validation_errors.append('amount: a valid amount must be specified and must be less or equals to %s' % token[1])
+                # except ValueError as e:
+                #     message = "".join([arg for arg in e.args])
+                #     validation_errors.append(message)
+            else:
+                validation_errors.append('tokenAddress: %s is not enabled' % token_address)
+        except:
+            validation_errors.append('tokenAddress: invalid token address'), 400
+    else:
+        validation_errors.append('tokenAddress: A valid token address or string \"native\" must be specified')
     return validation_errors, amount, recipient, token_address
 
 
@@ -98,6 +115,14 @@ def _ask(request_data, validate_captcha):
             tx_hash = claim_native(w3, current_app.config['FAUCET_ADDRESS'], recipient, amount_wei)
         else:
             tx_hash = claim_token(w3, current_app.config['FAUCET_ADDRESS'], recipient, amount_wei, token_address)
+        
+        # save info on DB
+        transaction = Transaction()
+        transaction.hash = tx_hash
+        transaction.recipient = recipient
+        transaction.amount = amount
+        transaction.token = token_address
+        transaction.save()
         return jsonify(transactionHash=tx_hash), 200
     except ValueError as e:
         message = "".join([arg['message'] for arg in e.args])
@@ -106,13 +131,14 @@ def _ask(request_data, validate_captcha):
 
 @apiv1.route("/ask", methods=["POST"])
 def ask():
-    return _ask(request.get_json(), validate_captcha=True)
+    data, status_code = _ask(request.get_json(), validate_captcha=True)
+    return data, status_code
 
 
 @apiv1.route("/cli/ask", methods=["POST"])
 def cli_ask():
-    access_key_id = request.headers.get('FAUCET_ACCESS_KEY_ID', None)
-    secret_access_key = request.headers.get('FAUCET_SECRET_ACCESS_KEY', None)
+    access_key_id = request.headers.get('X-faucet-access-key-id', None)
+    secret_access_key = request.headers.get('X-faucet-secret-access-key', None)
 
     validation_errors = []
 
@@ -127,4 +153,5 @@ def cli_ask():
         validation_errors.append('Access denied')
         return jsonify(errors=validation_errors), 403
 
-    return _ask(request.get_json(), validate_captcha=False)
+    data, status_code = _ask(request.get_json(), validate_captcha=False)
+    return data, status_code

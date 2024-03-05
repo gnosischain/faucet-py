@@ -15,8 +15,8 @@ rate_limit_strategy.strategy = os.getenv('FAUCET_RATE_LIMIT_STRATEGY', default=r
 
 FAUCET_RPC_URL = os.getenv("FAUCET_RPC_URL")
 FAUCET_PRIVATE_KEY = os.environ.get("FAUCET_PRIVATE_KEY")
-FAUCET_CHAIN_ID = os.getenv('FAUCET_CHAIN_ID')
-FAUCET_CHAIN_NAME = get_chain_name(os.getenv('FAUCET_CHAIN_ID'))
+FAUCET_ENABLED_CHAIN_IDS = [int(x) for x in os.getenv('FAUCET_ENABLED_CHAIN_IDS').split(',')]
+# FAUCET_CHAIN_NAME = get_chain_name(os.getenv('FAUCET_CHAIN_ID'))
 
 SQLALCHEMY_DATABASE_URI = os.getenv('FAUCET_DATABASE_URI')
 
