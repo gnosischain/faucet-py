@@ -62,6 +62,15 @@
   min-width: 200px;
 }
 
+.token-info {
+  display: flex;
+  align-items: center;
+}
+
+strong {
+  margin-right: 0.6rem;
+}
+
 @media (min-width: 521px) {
   .flex-row .input-field,
   .flex-row .token-select {

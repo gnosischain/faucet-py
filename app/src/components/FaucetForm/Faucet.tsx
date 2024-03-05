@@ -27,6 +27,17 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
+
+  useEffect(() => {
+    if (enabledTokens.length === 1) {
+      setToken({
+        address: enabledTokens[0].address,
+        name: enabledTokens[0].name,
+        maximumAmount: Number(enabledTokens[0].maximumAmount)
+      })
+    } 
+  }, [enabledTokens.length])
+
   function formatErrors(errors: string[]) {
     return (
       <div>
@@ -50,7 +61,6 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
     const apiURL = `${process.env.REACT_APP_FAUCET_API_URL}/ask`
 
     if (token) {
-      console.log({ captchaToken })
       setLoading(true)
       try {
         const req = {
@@ -104,15 +114,25 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
         </div>
       </div>
       <div className="flex-row">
-        <label htmlFor="token">Choose token:</label>
-        <div className="input-field">
-          <TokenSelect
-            enabledTokens={enabledTokens}
-            token={token}
-            setToken={setToken}
-            windowWidth={windowWidth}
-          />
-        </div>
+        {(enabledTokens.length === 1 && token) ?
+          <>
+            <label htmlFor="token">Token:</label>
+            <div className="input-field token-info">
+              <strong>{token.name}</strong> {token.maximumAmount} / day
+            </div>
+          </> :
+          <>
+            <label htmlFor="token">Choose token:</label>
+            <div className="input-field">
+              <TokenSelect
+                enabledTokens={enabledTokens}
+                token={token}
+                setToken={setToken}
+                windowWidth={windowWidth}
+              />
+            </div>
+          </>
+        }
       </div>
       <div className="flex-row flex-row-captcha">
         <Captcha

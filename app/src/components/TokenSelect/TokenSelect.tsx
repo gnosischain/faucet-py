@@ -17,7 +17,7 @@ interface TokenSelectProps {
 const formatOptionLabel = ({ name, maximumAmount }: Token) => {
   return (
     <div>
-      <strong>{name}</strong> {maximumAmount} day
+      <strong>{name}</strong> {maximumAmount} / day
     </div>
   )
 }
