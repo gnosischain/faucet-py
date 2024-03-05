@@ -75,8 +75,11 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
           .post(apiURL, req)
           .then((response) => {
             setWalletAddress("")
-            setToken(null)
 
+            if (enabledTokens.length > 1 ) {
+              setToken(null)
+            }
+   
             // Reset captcha
             setCaptchaToken("")
             captchaRef.current?.resetCaptcha()
