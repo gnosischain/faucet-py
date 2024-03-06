@@ -1,16 +1,15 @@
 """empty message
 
-Revision ID: 275d09ead9ea
+Revision ID: 022497197c7a
 Revises: 
-Create Date: 2024-03-05 18:04:06.309533
+Create Date: 2024-03-06 23:26:49.758798
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '275d09ead9ea'
+revision = '022497197c7a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -50,6 +49,9 @@ def upgrade():
     sa.Column('token', sa.String(), nullable=True),
     sa.Column('type', sa.String(length=10), nullable=False),
     sa.Column('access_key_id', sa.String(), nullable=True),
+    sa.Column('requester_ip', sa.String(), nullable=False),
+    sa.Column('created', sa.DateTime(), nullable=False),
+    sa.Column('updated', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['access_key_id'], ['access_keys.access_key_id'], ),
     sa.ForeignKeyConstraint(['token'], ['tokens.address'], ),
     sa.PrimaryKeyConstraint('id')

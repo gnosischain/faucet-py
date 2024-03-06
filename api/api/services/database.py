@@ -1,10 +1,10 @@
 import sqlite3
+from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
-                       DEFAULT_FAUCET_REQUEST_TYPE,
-                       DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY)
+                       DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, FaucetRequestType)
 
 db = SQLAlchemy()
 
@@ -77,6 +77,12 @@ class Token(BaseModel):
 
     __tablename__ = "tokens"
 
+    @classmethod
+    def enabled_tokens(cls):
+        return cls.query.with_entities(cls.name,
+                                       cls.address,
+                                       cls.chain_id).filter_by(enabled=True).all()
+
 
 class AccessKey(BaseModel):
     access_key_id = db.Column(db.String(16), primary_key=True)
@@ -108,10 +114,21 @@ class Transaction(BaseModel):
     recipient = db.Column(db.String(42), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     token = db.Column(db.String, db.ForeignKey('tokens.address'))
-    type = db.Column(db.String(10), nullable=False, default=DEFAULT_FAUCET_REQUEST_TYPE)
+    type = db.Column(db.String(10), nullable=False, default=FaucetRequestType.web.value)
     access_key_id = db.Column(db.String, db.ForeignKey('access_keys.access_key_id'), nullable=True)
+    requester_ip = db.Column(db.String, nullable=False)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     __tablename__ = "transactions"
     __table_args__ = tuple(
         db.PrimaryKeyConstraint('hash', 'token')
     )
+
+    @classmethod
+    def last_by_recipient(cls, recipient):
+        return cls.query.filter_by(recipient=recipient).order_by(cls.created.desc()).first()
+
+    @classmethod
+    def last_by_ip(cls, ip):
+        return cls.query.filter_by(requester_ip=ip).order_by(cls.created.desc()).first()

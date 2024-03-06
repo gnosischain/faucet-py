@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 
 from .manage import create_access_keys_cmd
 from .routes import apiv1
-from .services import Cache, Web3Singleton
+from .services import Web3Singleton
 from .services.database import db
 
 
@@ -34,8 +34,6 @@ def create_app():
     app = Flask(__name__)
     # Initialize main settings
     app.config.from_object('api.settings')
-    # Initialize Cache
-    app.config['FAUCET_CACHE'] = Cache(app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'])
     # Initialize API Routes
     app.register_blueprint(apiv1, url_prefix="/api/v1")
     # Add cli commands
