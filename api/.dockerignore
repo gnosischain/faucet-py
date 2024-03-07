@@ -1,3 +1,5 @@
+# Exclude migrations folder
+!/migrations/
 # Python
 __pycache__
 *.pyc
