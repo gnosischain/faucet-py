@@ -8,12 +8,12 @@ import Loading from "./components/Loading/Loading"
 import Faucet from "./components/FaucetForm/Faucet"
 
 const chainName:{ [key: string]: string }= {
-  "100": "Gnosis",
-  "10200": "Chiado"
+  100: "Gnosis",
+  10200: "Chiado"
 }
 
 function App(): JSX.Element {
-  const [chainId, setChainId] = useState("10200")
+  const [chainId, setChainId] = useState(10200)
   const [loading, setLoading] = useState(true)
   const [enabledTokens, setEnabledTokens] = useState([])
   const [faucetLoading, setFaucetLoading] = useState(true)
@@ -44,7 +44,7 @@ function App(): JSX.Element {
   const title = faucetLoading ? "FAUCET" : `${chainName[chainId]} CHAIN`
   const subtitle = faucetLoading
     ? "Loading..."
-    : (chainId === "100" ? "Faucet" : "Testnet Faucet")
+    : (chainId === 100 ? "Faucet" : "Testnet Faucet")
   
   return (
     <>
