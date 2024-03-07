@@ -40,11 +40,17 @@ def create_enabled_token_cmd(name, chain_id, address, max_amount_day, type):
         current_app.config['FAUCET_PRIVATE_KEY']
     )
 
+    # check if Token already exists
+    check_token = Token.get_by_address(w3.to_checksum_address(address))
+
+    if check_token:
+        raise Exception('Token %s already exists' % address)
+
     # Checks
-    if type.lower() != 'native' or type.lower() != 'erc20':
-        raise Exception('Type must be any of (erc20, native)')
+    if type.lower() not in ('native', 'erc20'):
+        raise Exception('Type must be any of (erc20, native) got %s' % type)
     if float(max_amount_day) <= 0:
-        raise Exception('Max amount per day must be greater than 0')
+        raise Exception('Max amount per day must be greater than 0, got %d' % float(max_amount_day))
 
     token = Token()
     token.name = name

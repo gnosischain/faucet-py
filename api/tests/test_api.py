@@ -21,6 +21,10 @@ class TestAPI(BaseTest):
         assert response.status_code == 200
         assert response.get_json().get('status') == 'ok'
 
+    def test_info_route(self, client):
+        response = client.get(api_prefix + '/info')
+        assert response.status_code == 200
+
     def test_ask_route_parameters(self, client):
         response = client.post(api_prefix + '/ask', json={})
         assert response.status_code == 400

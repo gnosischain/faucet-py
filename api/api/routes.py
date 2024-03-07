@@ -23,7 +23,8 @@ def info():
         {
             'address': t.address,
             'name': t.name,
-            'maximumAmount': t.max_amount_day
+            'maximumAmount': t.max_amount_day,
+            'type': t.type
         } for t in enabled_tokens
     ]
     return jsonify(
