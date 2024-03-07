@@ -79,9 +79,11 @@ class Token(BaseModel):
 
     @classmethod
     def enabled_tokens(cls):
-        return cls.query.with_entities(cls.name,
-                                       cls.address,
-                                       cls.chain_id).filter_by(enabled=True).all()
+        return cls.query.filter_by(enabled=True).all()
+    
+    @classmethod
+    def get_by_address(cls, address):
+        return cls.query.filter_by(address=address).first()
 
 
 class AccessKey(BaseModel):
