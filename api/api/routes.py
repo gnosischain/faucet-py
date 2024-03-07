@@ -133,7 +133,7 @@ def _ask(request_data, validate_captcha=True, access_key=None):
     if transaction:
         time_diff_seconds = (datetime.utcnow() - transaction.created).total_seconds()
         if time_diff_seconds < current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS']:
-            time_diff_hours = time_diff_seconds/(24*60)
+            time_diff_hours = 24-(time_diff_seconds/(24*60))
             return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %d hours' % time_diff_hours]), 429
 
     # convert amount to wei format
@@ -144,7 +144,8 @@ def _ask(request_data, validate_captcha=True, access_key=None):
 
         w3 = Web3Singleton(current_app.config['FAUCET_RPC_URL'], current_app.config['FAUCET_PRIVATE_KEY'])
 
-        if token_address == 'native':
+        token = Token.get_by_address(token_address)
+        if token.type == 'native':
             tx_hash = claim_native(w3, current_app.config['FAUCET_ADDRESS'], recipient, amount_wei)
         else:
             tx_hash = claim_token(w3, current_app.config['FAUCET_ADDRESS'], recipient, amount_wei, token_address)
