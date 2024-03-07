@@ -42,6 +42,23 @@ isort **/*.py --atomic
 python3 -m flake8
 ```
 
+### Operations
+
+#### Add enabled tokens
+
+To enable tokens on the API just run the command `create_enabled_token`.
+Accepted parameters: token name, chain ID, token address, maximum amount per day per user, whether native or erc20
+
+Samples below:
+
+```
+cd /api
+flask -A api create_enabled_token GNO 10200 0x19C653Da7c37c66208fbfbE8908A5051B57b4C70 0.01 erc20
+flask -A api create_enabled_token GNO 10200 0x0000000000000000000000000000000000000000 0.01 native
+```
+
+Once enabled, the token wil appear in the list of enabled tokens on the endpoint `api/v1/info`.
+
 ## ReactJS Frontend
 
 ### Requirements
