@@ -4,7 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
 
-from .manage import create_access_keys_cmd
+from .manage import create_access_keys_cmd, create_enabled_token_cmd
 from .routes import apiv1
 from .services import Web3Singleton
 from .services.database import db
@@ -38,6 +38,7 @@ def create_app():
     app.register_blueprint(apiv1, url_prefix="/api/v1")
     # Add cli commands
     app.cli.add_command(create_access_keys_cmd)
+    app.cli.add_command(create_enabled_token_cmd)
 
     with app.app_context():
         db.init_app(app)
