@@ -54,7 +54,7 @@ Samples below:
 ```
 cd /api
 flask -A api create_enabled_token GNO 10200 0x19C653Da7c37c66208fbfbE8908A5051B57b4C70 0.01 erc20
-flask -A api create_enabled_token GNO 10200 0x0000000000000000000000000000000000000000 0.01 native
+flask -A api create_enabled_token xDAI 10200 0x0000000000000000000000000000000000000000 0.01 native
 ```
 
 Once enabled, the token wil appear in the list of enabled tokens on the endpoint `api/v1/info`.
