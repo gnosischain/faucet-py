@@ -8,7 +8,7 @@ import HCaptcha from "@hcaptcha/react-hcaptcha"
 
 interface FaucetProps {
   enabledTokens: Token[],
-  chainId: string,
+  chainId: number,
   setLoading: Dispatch<SetStateAction<boolean>>
 }
 
@@ -151,7 +151,7 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
         <div className="flex-row success">
           <div>Token sent to your wallet address. Hash: </div> 
           <div>
-            {chainId === "100"
+            {chainId === 100
               ? <a
                   target="_blank"
                   rel="noreferrer"
