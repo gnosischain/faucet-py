@@ -1,3 +1,5 @@
+from api.const import ZERO_ADDRESS
+from api.services.database import Transaction
 from conftest import BaseTest, api_prefix
 # from mock import patch
 from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
@@ -6,9 +8,6 @@ from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
                           ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID,
                           NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH,
                           TOKEN_TRANSFER_TX_HASH)
-
-from api.const import ZERO_ADDRESS
-from api.services.database import Transaction
 
 
 class TestAPI(BaseTest):

@@ -1,11 +1,10 @@
+from api.const import ZERO_ADDRESS
+from api.services.database import AccessKey, AccessKeyConfig
+from api.utils import generate_access_key
 from conftest import BaseTest, api_prefix
 # from mock import patch
 from temp_env_var import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                           ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
-
-from api.const import ZERO_ADDRESS
-from api.services.database import AccessKey, AccessKeyConfig
-from api.utils import generate_access_key
 
 
 class TestAPICli(BaseTest):

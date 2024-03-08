@@ -1,11 +1,11 @@
 import os
 from unittest import TestCase, mock
 
+from api.services import Strategy
+from api.services.database import Token, db
 from temp_env_var import FAUCET_ENABLED_TOKENS, TEMP_ENV_VARS
 
 from api import create_app
-from api.services import Strategy
-from api.services.database import Token, db
 
 api_prefix = '/api/v1'
 

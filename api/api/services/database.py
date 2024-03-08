@@ -1,10 +1,9 @@
 import sqlite3
 from datetime import datetime
 
-from flask_sqlalchemy import SQLAlchemy
-
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                        DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, FaucetRequestType)
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
@@ -165,7 +164,7 @@ class Transaction(BaseModel):
     @classmethod
     def get_by_hash(cls, hash):
         return cls.query.filter_by(hash=hash).first()
-    
+
     @classmethod
     def get_amount_sum_by_access_key_and_token(cls,
                                                access_key_id,

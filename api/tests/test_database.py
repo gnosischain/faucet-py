@@ -1,13 +1,11 @@
 import pytest
-from sqlalchemy.exc import IntegrityError
-
-from conftest import BaseTest
-from temp_env_var import NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH
-
 from api.const import ZERO_ADDRESS
 from api.services.database import (AccessKey, AccessKeyConfig, Token,
                                    Transaction)
 from api.utils import generate_access_key
+from conftest import BaseTest
+from sqlalchemy.exc import IntegrityError
+from temp_env_var import NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH
 
 
 class TestDatabase(BaseTest):

@@ -1,9 +1,8 @@
 import datetime
 
+from api.const import TokenType
 from flask import current_app, request
 from web3 import Web3
-
-from api.const import TokenType
 
 from .captcha import captcha_verify
 from .database import AccessKeyConfig, Token, Transaction
@@ -144,7 +143,7 @@ class AskEndpointValidator:
         else:
             raise NotImplementedError
 
-        # Check if the recipient can claim funds, they must not have claimed any tokens 
+        # Check if the recipient can claim funds, they must not have claimed any tokens
         # in the period of time defined by FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS
         if transaction:
             time_diff_seconds = (datetime.datetime.utcnow() - transaction.created).total_seconds()

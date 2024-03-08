@@ -1,12 +1,11 @@
+from api.const import ZERO_ADDRESS
+from api.services.database import Transaction
 from conftest import (RateLimitIPBaseTest, RateLimitIPorAddressBaseTest,
                       api_prefix)
 # from mock import patch
 from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
                           DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                           ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
-
-from api.const import ZERO_ADDRESS
-from api.services.database import Transaction
 
 
 class TestAPIWithIPLimitStrategy(RateLimitIPBaseTest):
