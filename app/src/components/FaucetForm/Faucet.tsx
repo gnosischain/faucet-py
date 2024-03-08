@@ -12,6 +12,11 @@ interface FaucetProps {
   setLoading: Dispatch<SetStateAction<boolean>>
 }
 
+const blockscanner:{ [key: string]: string }= {
+  100: "https://gnosisscan.io/tx/",
+  10200: "https://gnosis-chiado.blockscout.com/tx/"
+}
+
 function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Element {
   const [walletAddress, setWalletAddress] = useState<string>("")
   const [token, setToken] = useState<Token | null>(null)
@@ -151,14 +156,11 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
         <div className="flex-row success">
           <div>Token sent to your wallet address. Hash: </div> 
           <div>
-            {chainId === 100
-              ? <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href={`https://gnosisscan.io/tx/${txHash}`}
-                >{txHash}</a>
-              : txHash
-            }
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={`${blockscanner[String(chainId)]}${txHash}`}
+            >{txHash}</a>
           </div>
         </div>
       }
