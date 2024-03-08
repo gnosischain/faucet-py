@@ -5,8 +5,10 @@ from dotenv import load_dotenv
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 
+from .const import CHAIN_NAMES
 from .services import RateLimitStrategy
-from .utils import get_chain_name
+
+# from .utils import get_chain_name
 
 load_dotenv()
 
@@ -15,24 +17,13 @@ rate_limit_strategy.strategy = os.getenv('FAUCET_RATE_LIMIT_STRATEGY', default=r
 
 FAUCET_RPC_URL = os.getenv("FAUCET_RPC_URL")
 FAUCET_PRIVATE_KEY = os.environ.get("FAUCET_PRIVATE_KEY")
-FAUCET_ENABLED_CHAIN_IDS = [int(x) for x in os.getenv('FAUCET_ENABLED_CHAIN_IDS').split(',')]
-# FAUCET_CHAIN_NAME = get_chain_name(os.getenv('FAUCET_CHAIN_ID'))
-
-SQLALCHEMY_DATABASE_URI = os.getenv('FAUCET_DATABASE_URI')
-
-# env FAUCET_ENABLED_TOKENS
-# sample JSON string:
-# [
-#     {
-#         "address": "0x19C653Da7c37c66208fbfbE8908A5051B57b4C70"
-#         "name": "GNO",
-#         "maximumAmount": 0.5
-#     }
-# ]
-FAUCET_ENABLED_TOKENS = json.loads(os.getenv('FAUCET_ENABLED_TOKENS', default='[]'))
+FAUCET_CHAIN_ID = int(os.getenv('FAUCET_CHAIN_ID'))
+FAUCET_CHAIN_NAME = CHAIN_NAMES[FAUCET_CHAIN_ID]
 FAUCET_ADDRESS: LocalAccount = Account.from_key(FAUCET_PRIVATE_KEY).address
 FAUCET_RATE_LIMIT_STRATEGY = rate_limit_strategy
 FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS = int(os.getenv('FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS', 86400))  # 86400 = 24h
+
+SQLALCHEMY_DATABASE_URI = os.getenv('FAUCET_DATABASE_URI')
 
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '*')
 

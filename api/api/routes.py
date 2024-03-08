@@ -1,10 +1,12 @@
+from datetime import datetime
+
 from flask import Blueprint, current_app, jsonify, request
 from web3 import Web3
 
+from .const import FaucetRequestType
 from .services import (Strategy, Web3Singleton, captcha_verify, claim_native,
                        claim_token)
-from .services.database import AccessKey, Token
-from .utils import is_amount_valid, is_token_enabled
+from .services.database import AccessKey, Token, Transaction
 
 apiv1 = Blueprint("version1", "version1")
 
@@ -16,17 +18,33 @@ def status():
 
 @apiv1.route("/info")
 def info():
-    enabled_tokens = Token.query.with_entities(Token.name, Token.address,
-                                               Token.chain_id).filter_by(enabled=True).all()
+    enabled_tokens = Token.enabled_tokens()
+    enabled_tokens_json = [
+        {
+            'address': t.address,
+            'name': t.name,
+            'maximumAmount': t.max_amount_day,
+            'type': t.type
+        } for t in enabled_tokens
+    ]
     return jsonify(
-        enabledTokens=enabled_tokens,
-        # chainId=current_app.config['FAUCET_ENABLED_CHAIN_IDS'],
-        # chainName=current_app.config['FAUCET_CHAIN_NAME'],
+        enabledTokens=enabled_tokens_json,
+        chainId=current_app.config['FAUCET_CHAIN_ID'],
+        chainName=current_app.config['FAUCET_CHAIN_NAME'],
         faucetAddress=current_app.config['FAUCET_ADDRESS']
     ), 200
 
 
-def _ask_route_validation(request_data, validate_captcha):
+def _ask_route_validation(request_data, validate_captcha=True):
+    """Validate `ask/` endpoint request data
+
+    Args:
+        request_data (object): request object
+        validate_captcha (bool, optional): True if captcha must be validated, False otherwise. Defaults to True.
+
+    Returns:
+        tuple: validation errors, amount, recipient, token address
+    """
     validation_errors = []
 
     # Captcha validation
@@ -67,10 +85,10 @@ def _ask_route_validation(request_data, validate_captcha):
                 address=token_address,
                 chain_id=request_data.get('chainId')).first()
 
-            if token and token[0] is True:
+            if token and token.enabled is True:
                 if not amount:
                     validation_errors.append('amount: is required')
-                if amount and amount > token[1]:
+                if amount and amount > token.max_amount_day:
                     validation_errors.append('amount: a valid amount must be specified and must be less or equals to %s' % token[1])
                 # except ValueError as e:
                 #     message = "".join([arg for arg in e.args])
@@ -84,37 +102,72 @@ def _ask_route_validation(request_data, validate_captcha):
     return validation_errors, amount, recipient, token_address
 
 
-def _ask(request_data, validate_captcha):
+def _ask(request_data, validate_captcha=True, access_key=None):
+    """Process /ask request
+
+    Args:
+        request_data (object): request object
+        validate_captcha (bool, optional): True if captcha must be validated, False otherwise. Defaults to True.
+        access_key (object, optional): AccessKey instance. Defaults to None.
+
+    Raises:
+        NotImplementedError:
+
+    Returns:
+        tuple: json content, status code
+    """
     validation_errors, amount, recipient, token_address = _ask_route_validation(request_data, validate_captcha)
 
     if len(validation_errors) > 0:
         return jsonify(errors=validation_errors), 400
 
-    # Cache
-    cache = current_app.config['FAUCET_CACHE']
+    ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+
     if current_app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.address.value:
-        # Check last claim
-        if cache.limit_by_address(recipient):
-            return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %s hours' % cache.ttl(hours=True)]), 429
+        # Check last claim by recipient
+        transaction = Transaction.last_by_recipient(recipient)
     elif current_app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip.value:
-        ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
-        # Check last claim for the IP address
-        if cache.limit_by_ip(ip_address):
-            return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %s hours' % cache.ttl(hours=True)]), 429
+        # Check last claim by IP
+        transaction = Transaction.last_by_ip(ip_address)
     elif current_app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip_and_address:
         raise NotImplementedError
 
+    # Check if the recipient can claim funds, they must not have claimed any tokens 
+    # in the period of time defined by FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS
+    if transaction:
+        time_diff_seconds = (datetime.utcnow() - transaction.created).total_seconds()
+        if time_diff_seconds < current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS']:
+            time_diff_hours = 24-(time_diff_seconds/(24*60))
+            return jsonify(errors=['recipient: you have exceeded the limit for today. Try again in %d hours' % time_diff_hours]), 429
+
+    # convert amount to wei format
     amount_wei = Web3.to_wei(amount, 'ether')
     try:
-        # convert to checksum address
+        # convert recipient address to checksum address
         recipient = Web3.to_checksum_address(recipient)
 
         w3 = Web3Singleton(current_app.config['FAUCET_RPC_URL'], current_app.config['FAUCET_PRIVATE_KEY'])
 
-        if token_address == 'native':
+        token = Token.get_by_address(token_address)
+        if token.type == 'native':
             tx_hash = claim_native(w3, current_app.config['FAUCET_ADDRESS'], recipient, amount_wei)
         else:
             tx_hash = claim_token(w3, current_app.config['FAUCET_ADDRESS'], recipient, amount_wei, token_address)
+        
+        # save transaction data on DB
+        transaction = Transaction()
+        transaction.hash = tx_hash
+        transaction.recipient = recipient
+        transaction.amount = amount
+        transaction.token = token_address
+        transaction.requester_ip = ip_address
+        if access_key:
+            transaction.type = FaucetRequestType.cli.value
+            transaction.access_key_id = access_key.access_key_id
+        else:
+            transaction.type = FaucetRequestType.web.value
+        transaction.save()
+
         return jsonify(transactionHash=tx_hash), 200
     except ValueError as e:
         message = "".join([arg['message'] for arg in e.args])
@@ -123,7 +176,7 @@ def _ask(request_data, validate_captcha):
 
 @apiv1.route("/ask", methods=["POST"])
 def ask():
-    data, status_code = _ask(request.get_json(), validate_captcha=True)
+    data, status_code = _ask(request.get_json(), validate_captcha=True, access_key=None)
     return data, status_code
 
 
@@ -145,5 +198,5 @@ def cli_ask():
         validation_errors.append('Access denied')
         return jsonify(errors=validation_errors), 403
 
-    data, status_code = _ask(request.get_json(), validate_captcha=False)
+    data, status_code = _ask(request.get_json(), validate_captcha=False, access_key=access_key)
     return data, status_code

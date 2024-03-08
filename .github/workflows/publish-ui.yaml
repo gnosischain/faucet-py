@@ -4,7 +4,9 @@ name: Create and publish docker images for the UI
 # Configures this workflow to run every time a change is pushed to the branch called `release`.
 on:
   push:
-    branches: ['main']
+    branches:
+      - main
+      - dev
     tags:
       - v*
     paths:
@@ -44,7 +46,8 @@ jobs:
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
       # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
       # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
-      - name: Build and push Docker image
+      - name: Dev branch - Build and push Docker image
+        if: github.ref == 'refs/heads/dev'
         uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
         with:
           context: app
@@ -52,6 +55,55 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            "REACT_APP_HCAPTCHA_SITE_KEY=${{ secrets.REACT_APP_HCAPTCHA_SITE_KEY }}"
-            "REACT_APP_FAUCET_API_URL=${{ secrets.REACT_APP_FAUCET_API_URL}}"
-          
+            "REACT_APP_HCAPTCHA_SITE_KEY=${{ secrets.DEV_REACT_APP_HCAPTCHA_SITE_KEY }}"
+            "REACT_APP_FAUCET_API_URL=${{ secrets.DEV_REACT_APP_FAUCET_API_URL}}"
+
+      - name: Gnosis Chain - Main branch / tags - Build and push Docker image
+        if: ( github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') )
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
+        with:
+          context: app
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-gc
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            "REACT_APP_HCAPTCHA_SITE_KEY=${{ secrets.PROD_GC_REACT_APP_HCAPTCHA_SITE_KEY }}"
+            "REACT_APP_FAUCET_API_URL=${{ secrets.PROD_GC_REACT_APP_FAUCET_API_URL}}"
+
+      - name: Chiado Chain - Main branch / tags - Build and push Docker image
+        if: ( github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') )
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
+        with:
+          context: app
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-chiado
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            "REACT_APP_HCAPTCHA_SITE_KEY=${{ secrets.PROD_CHIADO_REACT_APP_HCAPTCHA_SITE_KEY }}"
+            "REACT_APP_FAUCET_API_URL=${{ secrets.PROD_CHIADO_REACT_APP_FAUCET_API_URL}}"
+        
+  eks-deployment-restart:
+    # Run job on branch dev only
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    needs:  build-and-push-image
+    permissions:
+      id-token: write   # Required for the OIDC, see https://github.com/aws-actions/configure-aws-credentials?tab=readme-ov-file#OIDC
+      contents: read
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.0
+        with:
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.DEV_AWS_EKS_ROLE }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ secrets.DEV_AWS_REGION }}
+
+      - name: Configure kubectl for EKS
+        run: aws eks update-kubeconfig --name ${{ secrets.DEV_AWS_EKS_CLUSTER }} --region ${{ secrets.DEV_AWS_REGION }}
+
+      - name: Restart Bridge Explorer Deployment
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          kubectl config use-context arn:aws:eks:${{ secrets.DEV_AWS_REGION }}:${{ secrets.DEV_AWS_ACCOUNT_ID }}:cluster/${{ secrets.DEV_AWS_EKS_CLUSTER }}
+          kubectl rollout restart deploy/${{ secrets.DEV_AWS_EKS_DEPLOYMENT_UI }} -n ${{ secrets.DEV_AWS_EKS_NAMESPACE }}

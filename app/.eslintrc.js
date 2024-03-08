@@ -4,7 +4,9 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: ["eslint:recommended", "plugin:react/recommended"],
+  parser: "@typescript-eslint/parser",
+  plugins: ["react", "@typescript-eslint"],
+  extends: ["eslint:recommended", "plugin:react/recommended", "plugin:@typescript-eslint/recommended"],
   overrides: [
     {
       env: {
@@ -20,7 +22,6 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["react"],
   rules: {
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
