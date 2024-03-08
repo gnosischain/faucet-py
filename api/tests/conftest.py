@@ -16,7 +16,7 @@ class BaseTest:
         # Mock values
         mocker.patch('api.routes.claim_native', return_value=NATIVE_TRANSFER_TX_HASH)
         mocker.patch('api.routes.claim_token', return_value=TOKEN_TRANSFER_TX_HASH)
-        mocker.patch('api.routes.captcha_verify', return_value=True)
+        mocker.patch('api.services.captcha_verify', return_value=True)
         mocker.patch('api.api.print_info', return_value=None)
         if env_variables:
             mocker.patch.dict(os.environ, env_variables)
@@ -26,6 +26,7 @@ class BaseTest:
         return create_app()
 
     def _reset_db(self):
+        print("#== Reset DB ==#")
         db.drop_all()
         db.create_all()
         self.populate_db()
@@ -53,7 +54,21 @@ class BaseTest:
             token.save()
 
 
-class RateLimitBaseTest(BaseTest):
+class RateLimitIPBaseTest(BaseTest):
+    @pytest.fixture
+    def app(self, mocker):
+        # Set rate limit strategy to IP
+        env_vars = TEMP_ENV_VARS.copy()
+        env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = Strategy.ip.value
+        mocker = self._mock(mocker, env_vars)
+
+        app = self._create_app()
+        with app.app_context():
+            self._reset_db()
+            yield app
+
+
+class RateLimitIPorAddressBaseTest(BaseTest):
     @pytest.fixture
     def app(self, mocker):
         # Set rate limit strategy to IP

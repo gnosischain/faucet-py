@@ -5,8 +5,9 @@ from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
                           DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
                           ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID,
                           NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH,
-                          TOKEN_TRANSFER_TX_HASH, ZERO_ADDRESS)
+                          TOKEN_TRANSFER_TX_HASH)
 
+from api.const import ZERO_ADDRESS
 from api.services.database import Transaction
 
 
@@ -121,6 +122,7 @@ class TestAPI(BaseTest):
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
+        print(response.get_json())
         assert response.status_code == 200
         assert response.get_json().get('transactionHash') == TOKEN_TRANSFER_TX_HASH
 

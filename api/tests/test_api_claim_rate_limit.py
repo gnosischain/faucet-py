@@ -1,28 +1,15 @@
-import pytest
-from conftest import BaseTest, RateLimitBaseTest, api_prefix
+from conftest import (RateLimitIPBaseTest, RateLimitIPorAddressBaseTest,
+                      api_prefix)
 # from mock import patch
 from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
                           DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
-                          ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID, TEMP_ENV_VARS,
-                          ZERO_ADDRESS)
+                          ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
 
-from api.services import Strategy
+from api.const import ZERO_ADDRESS
 from api.services.database import Transaction
 
 
-class TestAPIWithIPLimitStrategy(BaseTest):
-
-    @pytest.fixture
-    def app(self, mocker):
-        # Set rate limit strategy to IP
-        env_vars = TEMP_ENV_VARS.copy()
-        env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = Strategy.ip.value
-        mocker = self._mock(mocker, env_vars)
-
-        app = self._create_app()
-        with app.app_context():
-            self._reset_db()
-            yield app
+class TestAPIWithIPLimitStrategy(RateLimitIPBaseTest):
 
     def test_ask_route_limit_by_ip(self, client):
         response = client.post(api_prefix + '/ask', json={
@@ -45,7 +32,7 @@ class TestAPIWithIPLimitStrategy(BaseTest):
         assert response.status_code == 429
 
 
-class TestAPIWithIPorRecipientLimitStrategy(RateLimitBaseTest):
+class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
 
     def test_ask_route_limit_by_ip_or_address(self, client):
         response = client.post(api_prefix + '/ask', json={

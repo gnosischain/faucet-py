@@ -1,10 +1,10 @@
 from conftest import BaseTest, api_prefix
 # from mock import patch
 from temp_env_var import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
-                          ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID,
-                          ZERO_ADDRESS)
+                          ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
 
-from api.services.database import AccessKey
+from api.const import ZERO_ADDRESS
+from api.services.database import AccessKey, AccessKeyConfig
 from api.utils import generate_access_key
 
 
@@ -29,8 +29,18 @@ class TestCliAPI(BaseTest):
         # Access denied, not existing keys
         assert response.status_code == 403
 
-        # Create keys on DB
-        AccessKey(access_key_id=access_key_id, secret_access_key=secret_access_key).save()
+        # Create access keys on DB
+        access_key = AccessKey()
+        access_key.access_key_id = access_key_id
+        access_key.secret_access_key = secret_access_key
+        access_key.save()
+
+        config = AccessKeyConfig()
+        config.access_key_id = access_key.access_key_id
+        config.chain_id = 10200
+        config.erc20_max_amount_day = 10
+        config.native_max_amount_day = 20
+        config.save()
 
         response = client.post(api_prefix + '/cli/ask', headers=http_headers, json={
             'chainId': FAUCET_CHAIN_ID,
@@ -39,3 +49,11 @@ class TestCliAPI(BaseTest):
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
         assert response.status_code == 200
+
+        response = client.post(api_prefix + '/cli/ask', headers=http_headers, json={
+            'chainId': FAUCET_CHAIN_ID,
+            'amount': 30,
+            'recipient': ZERO_ADDRESS,
+            'tokenAddress': ERC20_TOKEN_ADDRESS
+        })
+        assert response.status_code == 429

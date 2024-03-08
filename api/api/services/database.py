@@ -80,10 +80,15 @@ class Token(BaseModel):
     @classmethod
     def enabled_tokens(cls):
         return cls.query.filter_by(enabled=True).all()
-    
+
     @classmethod
     def get_by_address(cls, address):
         return cls.query.filter_by(address=address).first()
+    
+    @classmethod
+    def get_by_address_and_chain_id(cls, address, chain_id):
+        return cls.query.filter_by(address=address,
+                                   chain_id=chain_id).first()
 
 
 class AccessKey(BaseModel):
@@ -92,9 +97,16 @@ class AccessKey(BaseModel):
     enabled = db.Column(db.Boolean, default=True, nullable=False)
 
     __tablename__ = "access_keys"
+    __table_args__ = (
+        db.UniqueConstraint('secret_access_key'),
+    )
 
     def __repr__(self):
         return f"<Access Key {self.access_key_id}>"
+
+    @classmethod
+    def get_by_key_id(cls, access_key_id):
+        return cls.query.filter_by(access_key_id=access_key_id).first()
 
 
 class AccessKeyConfig(BaseModel):
@@ -105,9 +117,14 @@ class AccessKeyConfig(BaseModel):
     chain_id = db.Column(db.Integer, nullable=False)
 
     __tablename__ = "access_keys_config"
-    __table_args__ = tuple(
-        db.PrimaryKeyConstraint('access_key_id', 'chain_id')
+    __table_args__ = (
+        db.UniqueConstraint('access_key_id', 'chain_id'),
     )
+
+    @classmethod
+    def get_by_key_id_and_chain_id(cls, access_key_id, chain_id):
+        return cls.query.filter_by(access_key_id=access_key_id,
+                                   chain_id=chain_id).first()
 
 
 class Transaction(BaseModel):
@@ -123,7 +140,7 @@ class Transaction(BaseModel):
     updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     __tablename__ = "transactions"
-    __table_args__ = tuple(
+    __table_args__ = (
         db.UniqueConstraint('hash'),
     )
 
@@ -148,3 +165,25 @@ class Transaction(BaseModel):
     @classmethod
     def get_by_hash(cls, hash):
         return cls.query.filter_by(hash=hash).first()
+    
+    @classmethod
+    def get_amount_sum_by_access_key_and_token(cls,
+                                               access_key_id,
+                                               token_address,
+                                               custom_timerange=None):
+        if custom_timerange:
+            return cls.query.with_entities(
+                    db.func.sum(cls.amount).label('amount')
+                ).filter_by(
+                    access_key_id=access_key_id,
+                    token=token_address,
+                ).filter(
+                    cls.created >= custom_timerange
+                ).first().amount
+        else:
+            return cls.query.with_entities(
+                    db.func.sum(cls.amount).label('amount')
+                ).filter_by(
+                    access_key_id=access_key_id,
+                    token=token_address
+                ).first().amount
