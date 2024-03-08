@@ -124,7 +124,7 @@ class Transaction(BaseModel):
 
     __tablename__ = "transactions"
     __table_args__ = tuple(
-        db.PrimaryKeyConstraint('hash', 'token')
+        db.UniqueConstraint('hash'),
     )
 
     @classmethod
@@ -134,3 +134,17 @@ class Transaction(BaseModel):
     @classmethod
     def last_by_ip(cls, ip):
         return cls.query.filter_by(requester_ip=ip).order_by(cls.created.desc()).first()
+
+    @classmethod
+    def last_by_ip_and_recipient(cls, ip, recipient):
+        return cls.query.filter_by(requester_ip=ip, recipient=recipient).order_by(cls.created.desc()).first()
+
+    @classmethod
+    def last_by_ip_or_recipient(cls, ip, recipient):
+        return cls.query.filter(
+            ((cls.requester_ip == ip) | (cls.recipient == recipient))
+        ).order_by(cls.created.desc()).first()
+
+    @classmethod
+    def get_by_hash(cls, hash):
+        return cls.query.filter_by(hash=hash).first()

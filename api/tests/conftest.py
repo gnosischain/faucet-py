@@ -1,12 +1,12 @@
 import os
 
 import pytest
-from flask_migrate import upgrade
 from temp_env_var import (FAUCET_ENABLED_TOKENS, NATIVE_TRANSFER_TX_HASH,
                           TEMP_ENV_VARS, TOKEN_TRANSFER_TX_HASH)
 
 from api import create_app
-from api.services.database import Token
+from api.services import Strategy
+from api.services.database import Token, db
 
 api_prefix = '/api/v1'
 
@@ -25,19 +25,23 @@ class BaseTest:
     def _create_app(self):
         return create_app()
 
+    def _reset_db(self):
+        db.drop_all()
+        db.create_all()
+        self.populate_db()
+
     @pytest.fixture
     def app(self, mocker):
         mocker = self._mock(mocker, TEMP_ENV_VARS)
         app = self._create_app()
         with app.app_context():
-            upgrade()
-            self.populate_db()
+            self._reset_db()
             yield app
 
     @pytest.fixture
     def client(self, app):
         return app.test_client()
-    
+
     def populate_db(self):
         for enabled_token in FAUCET_ENABLED_TOKENS:
             token = Token()
@@ -47,3 +51,17 @@ class BaseTest:
             token.max_amount_day = enabled_token['maximumAmount']
             token.type = enabled_token['type']
             token.save()
+
+
+class RateLimitBaseTest(BaseTest):
+    @pytest.fixture
+    def app(self, mocker):
+        # Set rate limit strategy to IP
+        env_vars = TEMP_ENV_VARS.copy()
+        env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = Strategy.ip_or_address.value
+        mocker = self._mock(mocker, env_vars)
+
+        app = self._create_app()
+        with app.app_context():
+            self._reset_db()
+            yield app

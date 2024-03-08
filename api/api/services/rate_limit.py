@@ -5,10 +5,16 @@ class Strategy(Enum):
     ip = 'IP'
     address = 'ADDRESS'
     ip_and_address = 'IP_AND_ADDRESS'
+    ip_or_address = 'IP_OR_ADDRESS'
 
 
 class RateLimitStrategy:
-    _strategies = set([Strategy.ip.value, Strategy.address.value, Strategy.ip_and_address.value])
+    _strategies = set([
+        Strategy.ip.value,
+        Strategy.address.value,
+        Strategy.ip_and_address.value,
+        Strategy.ip_or_address.value
+        ])
     _strategy = None
     _default_strategy = Strategy.address.value
 

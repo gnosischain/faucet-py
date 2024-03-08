@@ -58,12 +58,8 @@ def _ask_route_validation(request_data, validate_captcha=True):
         if not catpcha_verified:
             validation_errors.append('captcha: validation failed')
 
-    if request_data.get('chainId') not in current_app.config['FAUCET_ENABLED_CHAIN_IDS']:
-        validation_errors.append('chainId: %s is not supported. Supported chainIds: %s' % (
-                request_data.get('chainId'),
-                ', '.join([str(x) for x in current_app.config['FAUCET_ENABLED_CHAIN_IDS']])
-            )
-        )
+    if request_data.get('chainId') != current_app.config['FAUCET_CHAIN_ID']:
+        validation_errors.append('chainId: %s is not supported. Supported chainId: %s' % (request_data.get('chainId'), current_app.config['FAUCET_CHAIN_ID']))
 
     recipient = request_data.get('recipient', None)
     if not Web3.is_address(recipient):
@@ -110,9 +106,6 @@ def _ask(request_data, validate_captcha=True, access_key=None):
         validate_captcha (bool, optional): True if captcha must be validated, False otherwise. Defaults to True.
         access_key (object, optional): AccessKey instance. Defaults to None.
 
-    Raises:
-        NotImplementedError:
-
     Returns:
         tuple: json content, status code
     """
@@ -129,7 +122,13 @@ def _ask(request_data, validate_captcha=True, access_key=None):
     elif current_app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip.value:
         # Check last claim by IP
         transaction = Transaction.last_by_ip(ip_address)
-    elif current_app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip_and_address:
+    elif current_app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip_and_address.value:
+        transaction = Transaction.last_by_ip_and_recipient(ip_address,
+                                                           recipient)
+    elif current_app.config['FAUCET_RATE_LIMIT_STRATEGY'].strategy == Strategy.ip_or_address.value:
+        transaction = Transaction.last_by_ip_or_recipient(ip_address,
+                                                          recipient)
+    else:
         raise NotImplementedError
 
     # Check if the recipient can claim funds, they must not have claimed any tokens 
