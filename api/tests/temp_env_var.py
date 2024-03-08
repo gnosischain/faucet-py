@@ -33,7 +33,8 @@ TEMP_ENV_VARS = {
     'FAUCET_CHAIN_ID': str(FAUCET_CHAIN_ID),
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
     'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '10',
-    'FAUCET_DATABASE_URI': 'sqlite://',  # run in-memory
+    # 'FAUCET_DATABASE_URI': 'sqlite://',  # run in-memory
+    'FAUCET_DATABASE_URI': 'sqlite:///test.db',
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }
 

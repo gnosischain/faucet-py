@@ -2,7 +2,8 @@ from flask import Blueprint, current_app, jsonify, request
 from web3 import Web3
 
 from .const import FaucetRequestType, TokenType
-from .services import Validator, Web3Singleton, claim_native, claim_token
+from .services import (AskEndpointValidator, Web3Singleton, claim_native,
+                       claim_token)
 from .services.database import AccessKey, Token, Transaction
 
 apiv1 = Blueprint("version1", "version1")
@@ -43,11 +44,11 @@ def _ask(request_data, validate_captcha=True, access_key=None):
     Returns:
         tuple: json content, status code
     """
-    validator = Validator(request_data,
-                          validate_captcha,
-                          access_key=access_key)
-    validator.validate()
-    if len(validator.errors) > 0:
+    validator = AskEndpointValidator(request_data,
+                                     validate_captcha,
+                                     access_key=access_key)
+    ok = validator.validate()
+    if not ok:
         return jsonify(message=validator.errors), validator.http_return_code
 
     # convert amount to wei format
@@ -83,7 +84,6 @@ def _ask(request_data, validate_captcha=True, access_key=None):
         else:
             transaction.type = FaucetRequestType.web.value
         transaction.save()
-
         return jsonify(transactionHash=tx_hash), 200
     except ValueError as e:
         message = "".join([arg['message'] for arg in e.args])
