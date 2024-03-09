@@ -1,11 +1,13 @@
 import os
-from unittest import TestCase, mock
+from unittest import TestCase, TestResult, mock
 
-from api.services import Strategy
-from api.services.database import Token, db
-from temp_env_var import FAUCET_ENABLED_TOKENS, TEMP_ENV_VARS
+from flask.testing import FlaskClient
 
 from api import create_app
+from api.services import Strategy
+from api.services.database import Token, db
+
+from .temp_env_var import FAUCET_ENABLED_TOKENS, TEMP_ENV_VARS
 
 api_prefix = '/api/v1'
 
@@ -53,55 +55,65 @@ class BaseTest(TestCase):
             token.save()
 
     def setUp(self):
-        self._mock(TEMP_ENV_VARS)
-        self.app = create_app()
-        self.appctx = self.app.app_context()
-        self.client = self.app.test_client()
-        self.appctx.push()
-        with self.appctx:
-            self._reset_db()
-
+        '''
+        Set up to do before running each test
+        '''
         self.native_tx_counter = 0
         self.erc20_tx_counter = 0
+        self._mock(TEMP_ENV_VARS)
+
+        self.app = create_app()
+        self.app_ctx = self.app.test_request_context()
+        self.app_ctx.push()
+
+        self.client = self.app.test_client()
+
+        with self.app_ctx:
+            self._reset_db()
 
     def tearDown(self):
-        self.appctx.pop()
-        self.client = None
-        self.app = None
-        self.appctx = None
-
+        '''
+        Cleanup to do after running each test
+        '''
         for p in self.patchers:
             p.stop()
+
+        self.app_ctx.pop()
+        self.app_ctx = None
 
 
 class RateLimitIPBaseTest(BaseTest):
     def setUp(self):
+        self.native_tx_counter = 0
+        self.erc20_tx_counter = 0
         env_vars = TEMP_ENV_VARS.copy()
         env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = Strategy.ip.value
         self._mock(env_vars)
-        self.app = create_app()
-        self.appctx = self.app.app_context()
-        self.client = self.app.test_client()
-        self.appctx.push()
-        with self.appctx:
-            self._reset_db()
 
-        self.native_tx_counter = 0
-        self.erc20_tx_counter = 0
+        self.app = create_app()
+        self.app_ctx = self.app.test_request_context()
+        self.app_ctx.push()
+
+        self.client = self.app.test_client()
+
+        with self.app_ctx:
+            self._reset_db()
 
 
 class RateLimitIPorAddressBaseTest(BaseTest):
     def setUp(self):
+        self.native_tx_counter = 0
+        self.erc20_tx_counter = 0
         # Set rate limit strategy to IP
         env_vars = TEMP_ENV_VARS.copy()
         env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = Strategy.ip_or_address.value
         self._mock(env_vars)
-        self.app = create_app()
-        self.appctx = self.app.app_context()
-        self.client = self.app.test_client()
-        self.appctx.push()
-        with self.appctx:
-            self._reset_db()
 
-        self.native_tx_counter = 0
-        self.erc20_tx_counter = 0
+        self.app = create_app()
+        self.app_ctx = self.app.test_request_context()
+        self.app_ctx.push()
+
+        self.client = self.app.test_client()
+
+        with self.app_ctx:
+            self._reset_db()
