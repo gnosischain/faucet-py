@@ -1,13 +1,15 @@
+import unittest
+
 from api.const import ZERO_ADDRESS
 from api.services.database import Transaction
-from conftest import BaseTest, api_prefix
+
+from .conftest import BaseTest, api_prefix
 # from mock import patch
-from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
-                          DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
-                          DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
-                          ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID,
-                          NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH,
-                          TOKEN_TRANSFER_TX_HASH)
+from .temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
+                           DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+                           DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
+                           ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID,
+                           NATIVE_TOKEN_ADDRESS)
 
 
 class TestAPI(BaseTest):
@@ -100,9 +102,10 @@ class TestAPI(BaseTest):
             'recipient': ZERO_ADDRESS,
             'tokenAddress': NATIVE_TOKEN_ADDRESS
         })
+        transaction = Transaction.query.filter_by(recipient=ZERO_ADDRESS).first()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json().get('transactionHash'), 
-                         NATIVE_TRANSFER_TX_HASH)
+        self.assertEqual(response.get_json().get('transactionHash'),
+                         transaction.hash)
 
     def test_ask_route_token_transaction(self):
         # not supported token, should return 400
@@ -111,7 +114,7 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': '0x' + '1' * 40
+            'tokenAddress': '0x' + '1234' * 10
         })
         self.assertEqual(response.status_code, 400)
 
@@ -122,8 +125,11 @@ class TestAPI(BaseTest):
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
+        transaction = Transaction.query.filter_by(recipient=ZERO_ADDRESS).first()
         self.assertEqual(response.status_code, 200)
-        assert response.get_json().get('transactionHash') == TOKEN_TRANSFER_TX_HASH
+        self.assertEqual(response.get_json().get('transactionHash'),
+                         transaction.hash)
 
-        transaction = Transaction.get_by_hash(TOKEN_TRANSFER_TX_HASH)
-        assert transaction.hash == TOKEN_TRANSFER_TX_HASH
+
+if __name__ == '__main__':
+    unittest.main()
