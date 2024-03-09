@@ -1,11 +1,14 @@
-import pytest
+import unittest
+
+from sqlalchemy.exc import IntegrityError
+
 from api.const import ZERO_ADDRESS
 from api.services.database import (AccessKey, AccessKeyConfig, Token,
                                    Transaction)
 from api.utils import generate_access_key
-from conftest import BaseTest
-from sqlalchemy.exc import IntegrityError
-from temp_env_var import NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH
+
+from .conftest import BaseTest
+from .temp_env_var import NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH
 
 
 class TestDatabase(BaseTest):
@@ -25,7 +28,7 @@ class TestDatabase(BaseTest):
         assert result[0].enabled is True
 
         # Duplicates for secret_access_key are not allowed
-        with pytest.raises(IntegrityError):
+        with self.assertRaises(IntegrityError):
             access_key_id2, _ = generate_access_key()
             access_key = AccessKey()
             access_key.access_key_id = access_key_id2
@@ -47,7 +50,7 @@ class TestDatabase(BaseTest):
         config.save()
 
         # Duplicates for (access_key_id, chain_id) are not allowed
-        with pytest.raises(IntegrityError):
+        with self.assertRaises(IntegrityError):
             config = AccessKeyConfig()
             config.access_key_id = access_key.access_key_id
             config.chain_id = 10200
@@ -67,7 +70,7 @@ class TestDatabase(BaseTest):
         transaction.save()
 
         # Duplicates for tx hash are not allowed
-        with pytest.raises(IntegrityError):
+        with self.assertRaises(IntegrityError):
             transaction = Transaction()
             transaction.hash = NATIVE_TRANSFER_TX_HASH
             transaction.recipient = ZERO_ADDRESS
@@ -75,3 +78,7 @@ class TestDatabase(BaseTest):
             transaction.token = token.address
             transaction.requester_ip = '192.168.0.1'
             transaction.save()
+
+
+if __name__ == '__main__':
+    unittest.main()

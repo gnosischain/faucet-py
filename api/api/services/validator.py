@@ -1,8 +1,10 @@
 import datetime
+import pdb
 
-from api.const import TokenType
 from flask import current_app, request
 from web3 import Web3
+
+from api.const import TokenType
 
 from .captcha import captcha_verify
 from .database import AccessKeyConfig, Token, Transaction
@@ -27,6 +29,7 @@ class AskEndpointValidator:
         self.validate_captcha = validate_captcha
         self.access_key = access_key
         self.ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+        self.errors = []
 
     def validate(self):
         self.data_validation()
