@@ -1,9 +1,10 @@
 import sqlite3
 from datetime import datetime
 
+from flask_sqlalchemy import SQLAlchemy
+
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                        DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, FaucetRequestType)
-from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 

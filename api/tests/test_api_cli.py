@@ -1,10 +1,13 @@
+import unittest
+
 from api.const import ZERO_ADDRESS
 from api.services.database import AccessKey, AccessKeyConfig
 from api.utils import generate_access_key
-from conftest import BaseTest, api_prefix
+
+from .conftest import BaseTest, api_prefix
 # from mock import patch
-from temp_env_var import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
-                          ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
+from .temp_env_var import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+                           ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
 
 
 class TestAPICli(BaseTest):
@@ -56,3 +59,7 @@ class TestAPICli(BaseTest):
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
         self.assertEqual(response.status_code, 429)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,11 +1,14 @@
+import unittest
+
 from api.const import ZERO_ADDRESS
 from api.services.database import Transaction
-from conftest import (RateLimitIPBaseTest, RateLimitIPorAddressBaseTest,
-                      api_prefix)
+
+from .conftest import (RateLimitIPBaseTest, RateLimitIPorAddressBaseTest,
+                       api_prefix)
 # from mock import patch
-from temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
-                          DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
-                          ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
+from .temp_env_var import (CAPTCHA_TEST_RESPONSE_TOKEN,
+                           DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+                           ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
 
 
 class TestAPIWithIPLimitStrategy(RateLimitIPBaseTest):
@@ -70,6 +73,8 @@ class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
-
-        print("%s: %d" % (response.get_json(), response.status_code))
         self.assertEqual(response.status_code, 429)
+
+
+if __name__ == '__main__':
+    unittest.main()
