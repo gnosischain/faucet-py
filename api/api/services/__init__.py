@@ -1,4 +1,3 @@
-from .captcha import captcha_verify
 from .database import DatabaseSingleton
 from .rate_limit import RateLimitStrategy, Strategy
 from .token import Token

@@ -29,7 +29,7 @@ class BaseTest(TestCase):
         self.patchers = [
             mock.patch('api.routes.claim_native', self.mock_claim_native),
             mock.patch('api.routes.claim_token', self.mock_claim_erc20),
-            mock.patch('api.services.captcha_verify', return_value=True),
+            mock.patch('api.services.validator.captcha_verify', return_value=True),
             mock.patch('api.api.print_info', return_value=None)
         ]
         if env_variables:
