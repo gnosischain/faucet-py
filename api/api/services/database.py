@@ -2,11 +2,20 @@ import sqlite3
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                        DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, FaucetRequestType)
 
-db = SQLAlchemy()
+flask_db_convention = {
+    "ix": 'ix_%(column_0_label)s',
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s"
+}
+db_metadata = MetaData(naming_convention=flask_db_convention)
+db = SQLAlchemy(metadata=db_metadata)
 
 
 class Database:
