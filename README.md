@@ -30,7 +30,7 @@ python3 -m flask --app api run --port 8000
 
 ```
 cd api
-python3 -m unittest discover tests
+python3 -m unittest discover -p 'test_*.py'
 ```
 
 ### Run Flake8 and isort
