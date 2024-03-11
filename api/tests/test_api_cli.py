@@ -59,6 +59,7 @@ class TestAPICli(BaseTest):
             'tokenAddress': ERC20_TOKEN_ADDRESS
         })
         self.assertEqual(response.status_code, 429)
+        self.assertIn('errors', response.get_json().keys())
 
 
 if __name__ == '__main__':
