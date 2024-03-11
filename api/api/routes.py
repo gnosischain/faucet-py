@@ -49,7 +49,7 @@ def _ask(request_data, validate_captcha=True, access_key=None):
                                      access_key=access_key)
     ok = validator.validate()
     if not ok:
-        return jsonify(message=validator.errors), validator.http_return_code
+        return jsonify(errors=validator.errors), validator.http_return_code
 
     # convert amount to wei format
     amount_wei = Web3.to_wei(validator.amount, 'ether')
