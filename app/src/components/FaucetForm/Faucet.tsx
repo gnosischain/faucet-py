@@ -29,6 +29,13 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
     window.addEventListener("resize", handleResize)
+
+    const searchParams = new URLSearchParams(window.location.search)
+    const addressFromURL = searchParams.get("address")
+    if (addressFromURL) {
+      setWalletAddress(addressFromURL)
+    }
+
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
@@ -40,7 +47,16 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
         name: enabledTokens[0].name,
         maximumAmount: Number(enabledTokens[0].maximumAmount)
       })
-    } 
+    } else {
+      const defaultToken = enabledTokens.find(token => token.address === "0x0000000000000000000000000000000000000000")
+      if (defaultToken !== undefined) {
+        setToken({
+          address: defaultToken.address,
+          name: defaultToken.name,
+          maximumAmount: Number(defaultToken.maximumAmount)
+        })
+      }
+    }
   }, [enabledTokens.length])
 
   function formatErrors(errors: string[]) {

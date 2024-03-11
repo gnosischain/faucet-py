@@ -1,11 +1,10 @@
 from secrets import token_bytes
 
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
-                       DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, NATIVE_TOKEN_ADDRESS)
+                       DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, NATIVE_TOKEN_ADDRESS,
+                       TokenType)
 
-ZERO_ADDRESS = "0x" + '0' * 40
-
-ERC20_TOKEN_ADDRESS = ZERO_ADDRESS
+ERC20_TOKEN_ADDRESS = "0x" + '1' * 40
 
 CAPTCHA_TEST_SECRET_KEY = '0x0000000000000000000000000000000000000000'
 CAPTCHA_TEST_RESPONSE_TOKEN = '10000000-aaaa-bbbb-cccc-000000000001'
@@ -18,14 +17,14 @@ FAUCET_ENABLED_TOKENS = [
         "name": "Native",
         "maximumAmount": DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
         "chainId": FAUCET_CHAIN_ID,
-        "type": "native"
+        "type": TokenType.native.value
     },
     {
         "address": ERC20_TOKEN_ADDRESS,
         "name": "TestToken",
         "maximumAmount": DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
         "chainId": FAUCET_CHAIN_ID,
-        "type": "erc20"
+        "type": TokenType.erc20.value
     }
 ]
 
@@ -35,6 +34,7 @@ TEMP_ENV_VARS = {
     'FAUCET_PRIVATE_KEY': token_bytes(32).hex(),
     'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '10',
     'FAUCET_DATABASE_URI': 'sqlite://',  # run in-memory
+    # 'FAUCET_DATABASE_URI': 'sqlite:///test.db',
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
 }
 

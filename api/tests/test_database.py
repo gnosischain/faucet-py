@@ -1,12 +1,19 @@
-from conftest import BaseTest
+import unittest
 
-from api.services.database import AccessKey
+from sqlalchemy.exc import IntegrityError
+
+from api.const import ZERO_ADDRESS
+from api.services.database import (AccessKey, AccessKeyConfig, Token,
+                                   Transaction)
 from api.utils import generate_access_key
+
+from .conftest import BaseTest
+from .temp_env_var import NATIVE_TOKEN_ADDRESS, NATIVE_TRANSFER_TX_HASH
 
 
 class TestDatabase(BaseTest):
 
-    def test_models(self, client):
+    def test_access_keys(self):
         access_key_id, secret_access_key = generate_access_key()
         assert len(access_key_id) == 16
         assert len(secret_access_key) == 32
@@ -19,3 +26,59 @@ class TestDatabase(BaseTest):
         assert result[0].access_key_id == access_key_id
         assert result[0].secret_access_key == secret_access_key
         assert result[0].enabled is True
+
+        # Duplicates for secret_access_key are not allowed
+        with self.assertRaises(IntegrityError):
+            access_key_id2, _ = generate_access_key()
+            access_key = AccessKey()
+            access_key.access_key_id = access_key_id2
+            access_key.secret_access_key = secret_access_key
+            access_key.save()
+
+    def test_access_key_config(self):
+        access_key_id, secret_access_key = generate_access_key()
+        access_key = AccessKey()
+        access_key.access_key_id = access_key_id
+        access_key.secret_access_key = secret_access_key
+        access_key.save()
+
+        config = AccessKeyConfig()
+        config.access_key_id = access_key.access_key_id
+        config.chain_id = 10200
+        config.erc20_max_amount_day = 10
+        config.native_max_amount_day = 20
+        config.save()
+
+        # Duplicates for (access_key_id, chain_id) are not allowed
+        with self.assertRaises(IntegrityError):
+            config = AccessKeyConfig()
+            config.access_key_id = access_key.access_key_id
+            config.chain_id = 10200
+            config.erc20_max_amount_day = 5
+            config.native_max_amount_day = 10
+            config.save()
+
+    def test_transactions(self):
+        token = Token.get_by_address(NATIVE_TOKEN_ADDRESS)
+
+        transaction = Transaction()
+        transaction.hash = NATIVE_TRANSFER_TX_HASH
+        transaction.recipient = ZERO_ADDRESS
+        transaction.amount = 1
+        transaction.token = token.address
+        transaction.requester_ip = '192.168.0.1'
+        transaction.save()
+
+        # Duplicates for tx hash are not allowed
+        with self.assertRaises(IntegrityError):
+            transaction = Transaction()
+            transaction.hash = NATIVE_TRANSFER_TX_HASH
+            transaction.recipient = ZERO_ADDRESS
+            transaction.amount = 1
+            transaction.token = token.address
+            transaction.requester_ip = '192.168.0.1'
+            transaction.save()
+
+
+if __name__ == '__main__':
+    unittest.main()

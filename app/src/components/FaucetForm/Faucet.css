@@ -110,6 +110,7 @@ strong {
 
 .faucet-container button:hover {
   background-color: #f0713b;
+  cursor: pointer;
 }
 
 .faucet-container button:disabled {

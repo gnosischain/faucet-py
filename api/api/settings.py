@@ -1,4 +1,3 @@
-import json
 import os
 
 from dotenv import load_dotenv
@@ -7,8 +6,6 @@ from eth_account.signers.local import LocalAccount
 
 from .const import CHAIN_NAMES
 from .services import RateLimitStrategy
-
-# from .utils import get_chain_name
 
 load_dotenv()
 
