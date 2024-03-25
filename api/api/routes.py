@@ -17,12 +17,14 @@ def status():
 @apiv1.route("/info")
 def info():
     enabled_tokens = Token.enabled_tokens()
+    rate_limit_days = current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'] / (24*60*60)
     enabled_tokens_json = [
         {
             'address': t.address,
             'name': t.name,
             'maximumAmount': t.max_amount_day,
-            'type': t.type
+            'type': t.type,
+            'rateLimitDays': round(rate_limit_days, 2)
         } for t in enabled_tokens
     ]
     return jsonify(
