@@ -94,3 +94,28 @@
     font-size: 2rem;
   }
 }
+
+h3 {
+  /* font-family: "Maxi Round", sans-serif; */
+  font-size: 1.6rem;
+  color: white;
+  color: #F0EBDE;
+  font-weight: normal;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+}
+
+ul {
+  color: white;
+  font-size: 1rem;
+  margin-top: 0;
+  list-style: circle;
+}
+
+li {
+  padding-bottom: 0.5rem;
+}
+
+li a {
+  color: white;
+}

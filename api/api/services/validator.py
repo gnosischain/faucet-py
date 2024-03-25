@@ -1,5 +1,4 @@
 import datetime
-import pdb
 
 from flask import current_app, request
 from web3 import Web3
