@@ -1,10 +1,12 @@
 import { Dispatch, SetStateAction } from "react"
 import Select, { StylesConfig } from "react-select"
+import { formatLimit } from "../../utils"
 
 export interface Token {
   address: string
   name: string
-  maximumAmount: number
+  maximumAmount: number,
+  rateLimitDays: number
 }
 
 interface TokenSelectProps {
@@ -14,10 +16,10 @@ interface TokenSelectProps {
   windowWidth: number
 }
 
-const formatOptionLabel = ({ name, maximumAmount }: Token) => {
+const formatOptionLabel = ({ name, maximumAmount, rateLimitDays }: Token) => {
   return (
     <div>
-      <strong>{name}</strong> {maximumAmount} / day
+      <strong>{name}</strong> {maximumAmount} / {formatLimit(rateLimitDays)}
     </div>
   )
 }
@@ -33,7 +35,8 @@ function TokenSelect ({ enabledTokens, token, setToken, windowWidth }: TokenSele
           setToken({
             address: option.address,
             name: option.name,
-            maximumAmount: Number(enabledTokens[idx].maximumAmount)
+            maximumAmount: Number(enabledTokens[idx].maximumAmount),
+            rateLimitDays: option.rateLimitDays
           })
           break
         }

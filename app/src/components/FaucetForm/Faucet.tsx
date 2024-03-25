@@ -5,6 +5,7 @@ import axios from "axios"
 import Captcha from "../Captcha/Captcha"
 import TokenSelect, { Token } from "../TokenSelect/TokenSelect"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
+import { formatLimit } from "../../utils"
 
 interface FaucetProps {
   enabledTokens: Token[],
@@ -45,7 +46,8 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
       setToken({
         address: enabledTokens[0].address,
         name: enabledTokens[0].name,
-        maximumAmount: Number(enabledTokens[0].maximumAmount)
+        maximumAmount: Number(enabledTokens[0].maximumAmount),
+        rateLimitDays: enabledTokens[0].rateLimitDays
       })
     } else {
       const defaultToken = enabledTokens.find(token => token.address === "0x0000000000000000000000000000000000000000")
@@ -53,7 +55,8 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
         setToken({
           address: defaultToken.address,
           name: defaultToken.name,
-          maximumAmount: Number(defaultToken.maximumAmount)
+          maximumAmount: Number(defaultToken.maximumAmount),
+          rateLimitDays: defaultToken.rateLimitDays
         })
       }
     }
@@ -142,7 +145,7 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
           <>
             <label htmlFor="token">Token:</label>
             <div className="input-field token-info">
-              <strong>{token.name}</strong> {token.maximumAmount} / day
+              <strong>{token.name}</strong> {token.maximumAmount} / {formatLimit(token.rateLimitDays)}
             </div>
           </> :
           <>
