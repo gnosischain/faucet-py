@@ -21,7 +21,8 @@ class AskEndpointValidator:
         'INVALID_RECIPIENT_ITSELF': 'recipient: address cant\'t be the Faucet address itself',
         'REQUIRED_AMOUNT': 'amount: is required',
         'AMOUNT_ZERO': 'amount: must be greater than 0',
-        'INVALID_TOKEN_ADDRESS': 'tokenAddress: A valid token address must be specified'
+        'INVALID_TOKEN_ADDRESS': 'tokenAddress: A valid token address must be specified',
+        'RATE_LIMIT_EXCEEDED': 'recipient: you have exceeded the limit for today. Try again in %d hours'
     }
 
     def __init__(self, request_data, validate_captcha, access_key=None, *args, **kwargs):
@@ -151,8 +152,13 @@ class AskEndpointValidator:
         if transaction:
             time_diff_seconds = (datetime.datetime.utcnow() - transaction.created).total_seconds()
             if time_diff_seconds < current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS']:
-                time_diff_hours = 24-(time_diff_seconds/(24*60))
-                self.errors.append('recipient: you have exceeded the limit for today. Try again in %d hours' % time_diff_hours)
+                time_limit_hours = current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'] / (24*60)
+                time_diff_hours = time_limit_hours-(time_diff_seconds/(24*60))
+                self.errors.append(
+                    self.messages['RATE_LIMIT_EXCEEDED'] % (
+                        round(time_diff_hours, 2)
+                    )
+                )
 
         if len(self.errors) > 0:
             self.http_return_code = 429
