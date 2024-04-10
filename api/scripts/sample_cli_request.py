@@ -1,6 +1,5 @@
 import requests
 
-
 ASK_API_ENDPOINT = 'https://api.faucet.dev.gnosisdev.com/api/v1/cli/ask'
 ACCESS_KEY_ID = '__ACCESS_KEY_ID__'
 ACCESS_KEY_SECRET = '__ACCESS_KEY_SECRET__'

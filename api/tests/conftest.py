@@ -34,7 +34,7 @@ class BaseTest(TestCase):
         ]
         if env_variables:
             self.patchers.append(mock.patch.dict(os.environ, env_variables))
-   
+
         for p in self.patchers:
             p.start()
 

@@ -1,7 +1,7 @@
 import unittest
 
 from api.const import ZERO_ADDRESS
-from api.services.database import Transaction
+from api.services.database import BlockedUsers, Transaction
 
 from .conftest import BaseTest, api_prefix
 # from mock import patch
@@ -129,6 +129,29 @@ class TestAPI(BaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json().get('transactionHash'),
                          transaction.hash)
+
+    def test_ask_route_blocked_users(self):
+        response = self.client.post(api_prefix + '/ask', json={
+            'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
+            'chainId': FAUCET_CHAIN_ID,
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+            'recipient': ZERO_ADDRESS,
+            'tokenAddress': ERC20_TOKEN_ADDRESS
+        })
+        self.assertEqual(response.status_code, 200)
+
+        # Add recipient to BlockedUsers
+        blocked_user = BlockedUsers(address=ZERO_ADDRESS)
+        blocked_user.save()
+
+        response = self.client.post(api_prefix + '/ask', json={
+            'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
+            'chainId': FAUCET_CHAIN_ID,
+            'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
+            'recipient': ZERO_ADDRESS,
+            'tokenAddress': ERC20_TOKEN_ADDRESS
+        })
+        self.assertEqual(response.status_code, 403)
 
 
 if __name__ == '__main__':

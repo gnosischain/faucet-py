@@ -33,6 +33,13 @@ cd api
 python3 -m unittest discover -p 'test_*.py'
 ```
 
+Run specific test case:
+
+```
+cd api
+python3 -m unittest tests.test_api.TestAPI.test_ask_route_blocked_users
+```
+
 ### Run Flake8 and isort
 
 ```
