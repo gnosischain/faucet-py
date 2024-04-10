@@ -111,7 +111,10 @@ class AskEndpointValidator:
         # check hcatpcha
         catpcha_verified = captcha_verify(
             self.request_data.get('captcha'),
-            current_app.config['CAPTCHA_VERIFY_ENDPOINT'], current_app.config['CAPTCHA_SECRET_KEY']
+            current_app.config['CAPTCHA_VERIFY_ENDPOINT'],
+            current_app.config['CAPTCHA_SECRET_KEY'],
+            self.ip_address,
+            current_app.config['CAPTCHA_SITE_KEY']
         )
 
         if not catpcha_verified:
