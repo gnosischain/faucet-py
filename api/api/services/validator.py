@@ -33,7 +33,7 @@ class AskEndpointValidator:
         self.errors = []
 
     def validate(self):
-        self.user_validation()
+        self.blocked_user_validation()
         if len(self.errors) > 0:
             return False
 
@@ -64,16 +64,16 @@ class AskEndpointValidator:
                 return False
         return True
 
-    def user_validation(self):
+    def blocked_user_validation(self):
         recipient = self.request_data.get('recipient', None)
-        if not Web3.is_address(recipient):
-            self.errors.append(self.messages['INVALID_RECIPIENT'])
-
-        # check if recipient in blocked_users, return 403
-        user = BlockedUsers.get_by_address(recipient)
-        if user:
-            self.errors.append(self.messages['BLOCKED_RECIPIENT'])
-            self.http_return_code = 403
+        # Run validation on blocked users only if `recipient` is available.
+        # Let next validation steps do the rest.
+        if recipient:
+            # check if recipient in blocked_users, return 403
+            user = BlockedUsers.get_by_address(recipient)
+            if user:
+                self.errors.append(self.messages['BLOCKED_RECIPIENT'])
+                self.http_return_code = 403
 
     def data_validation(self):
         if self.request_data.get('chainId') != current_app.config['FAUCET_CHAIN_ID']:
