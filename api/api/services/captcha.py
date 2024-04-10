@@ -1,10 +1,12 @@
 import requests
 
 
-def captcha_verify(client_response, catpcha_api_url, secret_key):
+def captcha_verify(client_response, catpcha_api_url, secret_key, remote_ip, site_key):
     request = requests.post(catpcha_api_url, data={
         'response': client_response,
-        'secret': secret_key
+        'secret': secret_key,
+        'remoteip': remote_ip,
+        'sitekey': site_key
     })
 
     if request.status_code != 200:
