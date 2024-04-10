@@ -6,7 +6,7 @@ from web3 import Web3
 from api.const import TokenType
 
 from .captcha import captcha_verify
-from .database import AccessKeyConfig, Token, Transaction
+from .database import AccessKeyConfig, BlockedUsers, Token, Transaction
 from .rate_limit import Strategy
 
 
@@ -18,6 +18,7 @@ class AskEndpointValidator:
         'UNSUPPORTED_CHAIN': 'chainId: %s is not supported. Supported chainId: %s',
         'INVALID_RECIPIENT': 'recipient: A valid recipient address must be specified',
         'INVALID_RECIPIENT_ITSELF': 'recipient: address cant\'t be the Faucet address itself',
+        'BLOCKED_RECIPIENT': 'Recipient address is blocked',
         'REQUIRED_AMOUNT': 'amount: is required',
         'AMOUNT_ZERO': 'amount: must be greater than 0',
         'INVALID_TOKEN_ADDRESS': 'tokenAddress: A valid token address must be specified',
@@ -32,6 +33,10 @@ class AskEndpointValidator:
         self.errors = []
 
     def validate(self):
+        self.user_validation()
+        if len(self.errors) > 0:
+            return False
+
         self.data_validation()
         if len(self.errors) > 0:
             return False
@@ -58,6 +63,17 @@ class AskEndpointValidator:
             if len(self.errors) > 0:
                 return False
         return True
+
+    def user_validation(self):
+        recipient = self.request_data.get('recipient', None)
+        if not Web3.is_address(recipient):
+            self.errors.append(self.messages['INVALID_RECIPIENT'])
+
+        # check if recipient in blocked_users, return 403
+        user = BlockedUsers.get_by_address(recipient)
+        if user:
+            self.errors.append(self.messages['BLOCKED_RECIPIENT'])
+            self.http_return_code = 403
 
     def data_validation(self):
         if self.request_data.get('chainId') != current_app.config['FAUCET_CHAIN_ID']:

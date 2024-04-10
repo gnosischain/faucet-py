@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, func
 
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                        DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, FaucetRequestType)
@@ -93,7 +93,7 @@ class Token(BaseModel):
     @classmethod
     def get_by_address(cls, address):
         return cls.query.filter_by(address=address).first()
-    
+
     @classmethod
     def get_by_address_and_chain_id(cls, address, chain_id):
         return cls.query.filter_by(address=address,
@@ -196,3 +196,16 @@ class Transaction(BaseModel):
                     access_key_id=access_key_id,
                     token=token_address
                 ).first().amount
+
+
+class BlockedUsers(BaseModel):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    address = db.Column(db.String(42), nullable=False)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    __tablename__ = "blocked_users"
+
+    @classmethod
+    def get_by_address(cls, address):
+        return cls.query.filter(func.lower(cls.address) == func.lower(address)).first()

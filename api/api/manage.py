@@ -5,7 +5,7 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 from .services import Web3Singleton
-from .services.database import AccessKey, AccessKeyConfig, Token
+from .services.database import AccessKey, AccessKeyConfig, BlockedUsers, Token
 from .utils import generate_access_key
 
 
@@ -62,3 +62,25 @@ def create_enabled_token_cmd(name, chain_id, address, max_amount_day, type):
     token.save()
 
     logging.info('Token created successfully')
+
+
+@click.command(name='block_user')
+@click.argument('address')
+@with_appcontext
+def block_user_cmd(address):
+    w3 = Web3Singleton(
+        current_app.config['FAUCET_RPC_URL'],
+        current_app.config['FAUCET_PRIVATE_KEY']
+    )
+
+    # check if Token already exists
+    check_user = BlockedUsers.get_by_address(address)
+
+    if check_user:
+        raise Exception('User %s already blocked' % address)
+
+    blocked_user = BlockedUsers()
+    blocked_user.address = w3.to_checksum_address(address)
+    blocked_user.save()
+
+    logging.info('User blocked successfully')
