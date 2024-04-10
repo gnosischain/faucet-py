@@ -40,7 +40,7 @@ def create_app():
     # Add cli commands
     app.cli.add_command(create_access_keys_cmd)
     app.cli.add_command(create_enabled_token_cmd)
-    api.cli.add_command(block_user_cmd)
+    app.cli.add_command(block_user_cmd)
 
     with app.app_context():
         db.init_app(app)
