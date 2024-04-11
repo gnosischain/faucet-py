@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from .manage import (block_user_cmd, create_access_keys_cmd,
                      create_enabled_token_cmd)
 from .routes import apiv1
-from .services import Web3Singleton
+from .services import CSRF, Web3Singleton
 from .services.database import db
 
 
@@ -45,6 +45,9 @@ def create_app():
     with app.app_context():
         db.init_app(app)
         Migrate(app, db)
+
+    # Initialize CSRF Library
+    CSRF(app.config['CSRF_PRIVATE_KEY'], app.config['CSRF_SECRET_SALT'])
 
     # Initialize Web3 class for latter usage
     w3 = Web3Singleton(app.config['FAUCET_RPC_URL'], app.config['FAUCET_PRIVATE_KEY'])

@@ -7,7 +7,6 @@ Create Date: 2024-03-09 11:37:03.009350
 """
 import sqlalchemy as sa
 from alembic import op
-
 from api.services.database import flask_db_convention
 
 # revision identifiers, used by Alembic.

@@ -1,11 +1,11 @@
 import os
 from unittest import TestCase, TestResult, mock
 
+from api.services import CSRF, Strategy
+from api.services.database import Token, db
 from flask.testing import FlaskClient
 
 from api import create_app
-from api.services import Strategy
-from api.services.database import Token, db
 
 from .temp_env_var import FAUCET_ENABLED_TOKENS, TEMP_ENV_VARS
 
@@ -71,6 +71,10 @@ class BaseTest(TestCase):
         with self.app_ctx:
             self._reset_db()
 
+            self.csrf = CSRF.instance
+            # use same token for the whole test
+            self.csrf_token = self.csrf.generate_token()
+
     def tearDown(self):
         '''
         Cleanup to do after running each test
@@ -99,6 +103,10 @@ class RateLimitIPBaseTest(BaseTest):
         with self.app_ctx:
             self._reset_db()
 
+            self.csrf = CSRF.instance
+            # use same token for the whole test
+            self.csrf_token = self.csrf.generate_token()
+
 
 class RateLimitIPorAddressBaseTest(BaseTest):
     def setUp(self):
@@ -117,3 +125,7 @@ class RateLimitIPorAddressBaseTest(BaseTest):
 
         with self.app_ctx:
             self._reset_db()
+
+            self.csrf = CSRF.instance
+            # use same token for the whole test
+            self.csrf_token = self.csrf.generate_token()
