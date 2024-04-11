@@ -39,7 +39,6 @@ class AskEndpointValidator:
         self.csrf = CSRF.instance
 
     def validate(self):
-        import pdb; pdb.set_trace()
         if self.validate_csrf:
             self.csrf_validation()
             if len(self.errors) > 0:
