@@ -2,7 +2,7 @@ from flask import Blueprint, current_app, jsonify, request
 from web3 import Web3
 
 from .const import FaucetRequestType, TokenType
-from .services import (AskEndpointValidator, Web3Singleton, claim_native,
+from .services import (CSRF, AskEndpointValidator, Web3Singleton, claim_native,
                        claim_token)
 from .services.database import AccessKey, Token, Transaction
 
@@ -14,7 +14,7 @@ def status():
     return jsonify(status='ok'), 200
 
 
-@apiv1.route("/info")
+@apiv1.route("/info", methods=["GET"])
 def info():
     enabled_tokens = Token.enabled_tokens()
     rate_limit_days = current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'] / (24*60*60)
@@ -27,27 +27,37 @@ def info():
             'rateLimitDays': round(rate_limit_days, 2)
         } for t in enabled_tokens
     ]
+
+    # it's a singleton, gets instantiated at app creation time
+    csrf = CSRF.instance
+    csrf_item = csrf.generate_token()
+
     return jsonify(
         enabledTokens=enabled_tokens_json,
         chainId=current_app.config['FAUCET_CHAIN_ID'],
         chainName=current_app.config['FAUCET_CHAIN_NAME'],
-        faucetAddress=current_app.config['FAUCET_ADDRESS']
+        faucetAddress=current_app.config['FAUCET_ADDRESS'],
+        csrfToken=csrf_item.token,
+        csrfRequestId=csrf_item.request_id
     ), 200
 
 
-def _ask(request_data, validate_captcha=True, access_key=None):
+def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=True, access_key=None):
     """Process /ask request
 
     Args:
         request_data (object): request object
         validate_captcha (bool, optional): True if captcha must be validated, False otherwise. Defaults to True.
+        validate_csrf (bool, optional): True if CSRF token must be validated, False otherwise. Defaults to True.
         access_key (object, optional): AccessKey instance. Defaults to None.
 
     Returns:
         tuple: json content, status code
     """
     validator = AskEndpointValidator(request_data,
+                                     request_headers,
                                      validate_captcha,
+                                     validate_csrf,
                                      access_key=access_key)
     ok = validator.validate()
     if not ok:
@@ -94,7 +104,7 @@ def _ask(request_data, validate_captcha=True, access_key=None):
 
 @apiv1.route("/ask", methods=["POST"])
 def ask():
-    data, status_code = _ask(request.get_json(), validate_captcha=True, access_key=None)
+    data, status_code = _ask(request.get_json(), request.headers, validate_captcha=True, access_key=None)
     return data, status_code
 
 
@@ -116,5 +126,5 @@ def cli_ask():
         validation_errors.append('Access denied')
         return jsonify(errors=validation_errors), 403
 
-    data, status_code = _ask(request.get_json(), validate_captcha=False, access_key=access_key)
+    data, status_code = _ask(request.get_json(), request.headers, validate_captcha=False, validate_csrf=False, access_key=access_key)
     return data, status_code

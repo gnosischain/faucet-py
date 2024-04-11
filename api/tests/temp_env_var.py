@@ -3,6 +3,7 @@ from secrets import token_bytes
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                        DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, NATIVE_TOKEN_ADDRESS,
                        TokenType)
+from Crypto.PublicKey import RSA
 
 ERC20_TOKEN_ADDRESS = "0x" + '1' * 40
 
@@ -28,6 +29,8 @@ FAUCET_ENABLED_TOKENS = [
     }
 ]
 
+privatekey = RSA.generate(1024)
+
 TEMP_ENV_VARS = {
     'FAUCET_RPC_URL': 'http://localhost:8545',
     'FAUCET_CHAIN_ID': str(FAUCET_CHAIN_ID),
@@ -35,7 +38,9 @@ TEMP_ENV_VARS = {
     'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '10',
     'FAUCET_DATABASE_URI': 'sqlite://',  # run in-memory
     # 'FAUCET_DATABASE_URI': 'sqlite:///test.db',
-    'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY
+    'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY,
+    'CSRF_PRIVATE_KEY': privatekey.export_key().decode(),
+    'CSRF_SECRET_SALT': 'testsalt'
 }
 
 # Mocked values

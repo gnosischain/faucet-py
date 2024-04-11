@@ -1,6 +1,7 @@
 import unittest
 
 from api.const import ZERO_ADDRESS
+from api.services import CSRF
 from api.services.database import BlockedUsers, Transaction
 
 from .conftest import BaseTest, api_prefix
@@ -33,7 +34,10 @@ class TestAPI(BaseTest):
             'chainId': -1,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': NATIVE_TOKEN_ADDRESS
+            'tokenAddress': NATIVE_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -43,7 +47,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': NATIVE_TOKEN_ADDRESS
+            'tokenAddress': NATIVE_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -52,7 +59,10 @@ class TestAPI(BaseTest):
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
-            'tokenAddress': NATIVE_TOKEN_ADDRESS
+            'tokenAddress': NATIVE_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -62,7 +72,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'recipient': 'not an address',
-            'tokenAddress': NATIVE_TOKEN_ADDRESS
+            'tokenAddress': NATIVE_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -71,7 +84,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': '0x00000123',
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -80,7 +96,10 @@ class TestAPI(BaseTest):
             'captcha': CAPTCHA_TEST_RESPONSE_TOKEN,
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
-            'recipient': ZERO_ADDRESS
+            'recipient': ZERO_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -90,7 +109,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY + 1,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': 'non existing token address'
+            'tokenAddress': 'non existing token address',
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -100,7 +122,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': NATIVE_TOKEN_ADDRESS
+            'tokenAddress': NATIVE_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         transaction = Transaction.query.filter_by(recipient=ZERO_ADDRESS).first()
         self.assertEqual(response.status_code, 200)
@@ -114,7 +139,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': '0x' + '1234' * 10
+            'tokenAddress': '0x' + '1234' * 10,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 400)
 
@@ -123,7 +151,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         transaction = Transaction.query.filter_by(recipient=ZERO_ADDRESS).first()
         self.assertEqual(response.status_code, 200)
@@ -136,7 +167,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 200)
 
@@ -149,7 +183,10 @@ class TestAPI(BaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 403)
 

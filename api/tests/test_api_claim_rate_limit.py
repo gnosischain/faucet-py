@@ -19,7 +19,10 @@ class TestAPIWithIPLimitStrategy(RateLimitIPBaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 200)
 
@@ -29,7 +32,10 @@ class TestAPIWithIPLimitStrategy(RateLimitIPBaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 429)
 
@@ -42,7 +48,10 @@ class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
 
         self.assertEqual(response.status_code, 200)
@@ -56,7 +65,10 @@ class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 429)
 
@@ -71,7 +83,10 @@ class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
             'chainId': FAUCET_CHAIN_ID,
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
-            'tokenAddress': ERC20_TOKEN_ADDRESS
+            'tokenAddress': ERC20_TOKEN_ADDRESS,
+            'requestId': self.csrf_token.request_id
+        }, headers={
+            'X-CSRFToken': self.csrf_token.token
         })
         self.assertEqual(response.status_code, 429)
 

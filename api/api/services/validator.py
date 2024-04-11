@@ -1,13 +1,16 @@
 import datetime
+import logging
 
+from api.const import TokenType
 from flask import current_app, request
 from web3 import Web3
 
-from api.const import TokenType
-
 from .captcha import captcha_verify
+from .csrf import CSRF
 from .database import AccessKeyConfig, BlockedUsers, Token, Transaction
 from .rate_limit import Strategy
+
+logging.basicConfig(level=logging.INFO)
 
 
 class AskEndpointValidator:
@@ -25,14 +28,23 @@ class AskEndpointValidator:
         'RATE_LIMIT_EXCEEDED': 'recipient: you have exceeded the limit for today. Try again in %d hours'
     }
 
-    def __init__(self, request_data, validate_captcha, access_key=None, *args, **kwargs):
+    def __init__(self, request_data, request_headers, validate_captcha, validate_csrf, access_key=None, *args, **kwargs):
         self.request_data = request_data
+        self.request_headers = request_headers
         self.validate_captcha = validate_captcha
+        self.validate_csrf = validate_csrf
         self.access_key = access_key
         self.ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
         self.errors = []
+        self.csrf = CSRF.instance
 
     def validate(self):
+        import pdb; pdb.set_trace()
+        if self.validate_csrf:
+            self.csrf_validation()
+            if len(self.errors) > 0:
+                return False
+
         self.blocked_user_validation()
         if len(self.errors) > 0:
             return False
@@ -63,6 +75,27 @@ class AskEndpointValidator:
             if len(self.errors) > 0:
                 return False
         return True
+
+    def csrf_validation(self):
+        token = self.request_headers.get('X-CSRFToken', None)
+        if not token:
+            self.errors.append('Bad request')
+            self.http_return_code = 400
+
+        request_id = self.request_data.get('requestId', None)
+        if not request_id:
+            self.errors.append('Bad request')
+            self.http_return_code = 400
+
+        try:
+            csrf_valid = self.csrf.validate_token(request_id, token)
+            if not csrf_valid:
+                self.errors.append('Bad request')
+                self.http_return_code = 400
+        except Exception as e:
+            logging.error(e)
+            self.errors.append('Bad request')
+            self.http_return_code = 400
 
     def blocked_user_validation(self):
         recipient = self.request_data.get('recipient', None)
