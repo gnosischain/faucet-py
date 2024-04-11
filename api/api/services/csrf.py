@@ -27,13 +27,16 @@ class CSRFToken:
         return CSRFTokenItem(request_id, token.hex())
 
     def validate_token(self, request_id, token):
-        cipher_rsa = PKCS1_OAEP.new(self._privkey)
-        decrypted_text = cipher_rsa.decrypt(bytes.fromhex(token)).decode()
+        try:
+            cipher_rsa = PKCS1_OAEP.new(self._privkey)
+            decrypted_text = cipher_rsa.decrypt(bytes.fromhex(token)).decode()
 
-        expected_text = '%s%s' % (request_id, self._salt)
-        if decrypted_text == expected_text:
-            return True
-        return False
+            expected_text = '%s%s' % (request_id, self._salt)
+            if decrypted_text == expected_text:
+                return True
+            return False
+        except Exception:
+            return False
 
 
 class CSRF:
