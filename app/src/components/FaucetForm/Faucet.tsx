@@ -10,7 +10,9 @@ import { formatLimit } from "../../utils"
 interface FaucetProps {
   enabledTokens: Token[],
   chainId: number,
-  setLoading: Dispatch<SetStateAction<boolean>>
+  setLoading: Dispatch<SetStateAction<boolean>>,
+  csrfToken: string,
+  requestId: string
 }
 
 const blockscanner:{ [key: string]: string }= {
@@ -18,7 +20,7 @@ const blockscanner:{ [key: string]: string }= {
   10200: "https://gnosis-chiado.blockscout.com/tx/"
 }
 
-function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Element {
+function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId }: FaucetProps): JSX.Element {
   const [walletAddress, setWalletAddress] = useState<string>("")
   const [token, setToken] = useState<Token | null>(null)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
@@ -87,16 +89,23 @@ function Faucet({ enabledTokens, chainId, setLoading }: FaucetProps): JSX.Elemen
     if (token) {
       setLoading(true)
       try {
-        const req = {
+        const requestData = {
           recipient: walletAddress,
           captcha: captchaToken,
           tokenAddress: token.address,
           chainId: chainId,
-          amount: token.maximumAmount
+          amount: token.maximumAmount,
+          requestId: requestId
+        }
+
+        const headers = {
+          'X-CSRFToken': csrfToken
         }
 
         axios
-          .post(apiURL, req)
+          .post(apiURL, requestData, {
+            headers: headers
+          })
           .then((response) => {
             setWalletAddress("")
 
