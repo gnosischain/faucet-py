@@ -1,11 +1,9 @@
 import os
-from unittest import TestCase, TestResult, mock
-
-from api.services import CSRF, Strategy
-from api.services.database import Token, db
-from flask.testing import FlaskClient
+from unittest import TestCase, mock
 
 from api import create_app
+from api.services import CSRF, Strategy
+from api.services.database import Token, db
 
 from .temp_env_var import FAUCET_ENABLED_TOKENS, TEMP_ENV_VARS
 
@@ -115,6 +113,33 @@ class RateLimitIPorAddressBaseTest(BaseTest):
         # Set rate limit strategy to IP
         env_vars = TEMP_ENV_VARS.copy()
         env_vars['FAUCET_RATE_LIMIT_STRATEGY'] = Strategy.ip_or_address.value
+        self._mock(env_vars)
+
+        self.app = create_app()
+        self.app_ctx = self.app.test_request_context()
+        self.app_ctx.push()
+
+        self.client = self.app.test_client()
+
+        with self.app_ctx:
+            self._reset_db()
+
+            self.csrf = CSRF.instance
+            # use same token for the whole test
+            self.csrf_token = self.csrf.generate_token()
+
+
+class ClaimValidationEnabledBaseTest(BaseTest):
+    # @mock.patch('requests.get', mock.Mock(side_effect = lambda k:{'aurl': 'a response', 'burl' : 'b response'}.get(k, 'unhandled request %s'%k)))
+
+    def setUp(self):
+        '''
+        Set up to do before running each test
+        '''
+        self.native_tx_counter = 0
+        self.erc20_tx_counter = 0
+        env_vars = TEMP_ENV_VARS.copy()
+        env_vars['CLAIM_VALIDATION_ENABLED'] = 'True'
         self._mock(env_vars)
 
         self.app = create_app()

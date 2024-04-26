@@ -42,13 +42,15 @@ def info():
     ), 200
 
 
-def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=True, access_key=None):
+def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=True, validate_claim_url=True, access_key=None):
     """Process /ask request
 
     Args:
         request_data (object): request object
         validate_captcha (bool, optional): True if captcha must be validated, False otherwise. Defaults to True.
         validate_csrf (bool, optional): True if CSRF token must be validated, False otherwise. Defaults to True.
+        validate_claim_url (bool, optional): True if the current request, that contains the link to an external allowed source,
+                                            which  a verification text, should be validated.
         access_key (object, optional): AccessKey instance. Defaults to None.
 
     Returns:
@@ -58,6 +60,7 @@ def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=Tru
                                      request_headers,
                                      validate_captcha,
                                      validate_csrf,
+                                     validate_claim_url,
                                      access_key=access_key)
     ok = validator.validate()
     if not ok:
@@ -104,7 +107,12 @@ def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=Tru
 
 @apiv1.route("/ask", methods=["POST"])
 def ask():
-    data, status_code = _ask(request.get_json(), request.headers, validate_captcha=True, access_key=None)
+    data, status_code = _ask(
+        request.get_json(),
+        request.headers,
+        validate_captcha=True,
+        validate_claim_url=current_app.config['CLAIM_VALIDATION_ENABLED'],
+        access_key=None)
     return data, status_code
 
 
@@ -126,5 +134,10 @@ def cli_ask():
         validation_errors.append('Access denied')
         return jsonify(errors=validation_errors), 403
 
-    data, status_code = _ask(request.get_json(), request.headers, validate_captcha=False, validate_csrf=False, access_key=access_key)
+    data, status_code = _ask(request.get_json(),
+                             request.headers,
+                             validate_captcha=False,
+                             validate_csrf=False,
+                             validate_claim_url=False,
+                             access_key=access_key)
     return data, status_code

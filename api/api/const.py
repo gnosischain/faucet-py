@@ -20,3 +20,7 @@ class FaucetRequestType(Enum):
 class TokenType(Enum):
     native = 'native'
     erc20 = 'erc20'
+
+
+class ClaimValidationType(Enum):
+    discourse = 'discourse'

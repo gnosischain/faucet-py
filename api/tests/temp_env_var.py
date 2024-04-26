@@ -1,9 +1,10 @@
 from secrets import token_bytes
 
+from Crypto.PublicKey import RSA
+
 from api.const import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                        DEFAULT_NATIVE_MAX_AMOUNT_PER_DAY, NATIVE_TOKEN_ADDRESS,
-                       TokenType)
-from Crypto.PublicKey import RSA
+                       TokenType, ClaimValidationType)
 
 ERC20_TOKEN_ADDRESS = "0x" + '1' * 40
 
@@ -40,7 +41,11 @@ TEMP_ENV_VARS = {
     # 'FAUCET_DATABASE_URI': 'sqlite:///test.db',
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY,
     'CSRF_PRIVATE_KEY': privatekey.export_key().decode(),
-    'CSRF_SECRET_SALT': 'testsalt'
+    'CSRF_SECRET_SALT': 'testsalt',
+    'CLAIM_VALIDATION_ENABLED': 'False',
+    'CLAIM_VALIDATION_ALLOWED_WEBSITE': 'http://myforum.gnosis.io',
+    'CLAIM_VALIDATION_WEBSITE_TYPE': ClaimValidationType.discourse.value,
+    'CLAIM_VALIDATION_DISCOURSE_API_URL': 'http://myforum.gnosis.io'
 }
 
 # Mocked values

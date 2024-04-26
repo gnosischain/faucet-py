@@ -1,7 +1,6 @@
 import unittest
 
 from api.const import ZERO_ADDRESS
-from api.services import CSRF
 from api.services.database import BlockedUsers, Transaction
 
 from .conftest import BaseTest, api_prefix

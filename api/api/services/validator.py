@@ -1,9 +1,11 @@
 import datetime
 import logging
 
-from api.const import TokenType
+import requests
 from flask import current_app, request
 from web3 import Web3
+
+from api.const import ClaimValidationType, TokenType
 
 from .captcha import captcha_verify
 from .csrf import CSRF
@@ -25,18 +27,28 @@ class AskEndpointValidator:
         'REQUIRED_AMOUNT': 'amount: is required',
         'AMOUNT_ZERO': 'amount: must be greater than 0',
         'INVALID_TOKEN_ADDRESS': 'tokenAddress: A valid token address must be specified',
-        'RATE_LIMIT_EXCEEDED': 'recipient: you have exceeded the limit for today. Try again in %d hours'
+        'RATE_LIMIT_EXCEEDED': 'recipient: you have exceeded the limit for today. Try again in %d hours',
+        'CLAIM_VALIDATION_MISSING_EXTERNAL_SOURCE_URL': 'claim validation URL: link to external source for claim validation is missing',
+        'CLAIM_VALIDATION_NOT_ALLOWED_DOMAIN': 'claim validation URL: the domain in the link to the validation URL is not allowed',
+        'CLAIM_VALIDATION_INVALID_URL': 'claim validation URL: the provided validation URL is not valid',
+        'CLAIM_VALIDATION_INVALID_RECIPIENT': 'claim validation URL: the provided recipient does not match the address on the remote website',
+        'CLAIM_VALIDATION_EXPIRED_RESOURCE': 'claim validation URL: the provided target resource'
     }
 
-    def __init__(self, request_data, request_headers, validate_captcha, validate_csrf, access_key=None, *args, **kwargs):
+    def __init__(self, request_data, request_headers, validate_captcha, validate_csrf, validate_claim_url, access_key=None, *args, **kwargs):
         self.request_data = request_data
         self.request_headers = request_headers
         self.validate_captcha = validate_captcha
         self.validate_csrf = validate_csrf
+        self.validate_claim_url = validate_claim_url
         self.access_key = access_key
         self.ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
         self.errors = []
         self.csrf = CSRF.instance
+
+        logging.info('Validating request for IP %s headers %s request data %s' % (self.ip_address,
+                                                                                  self.request_headers,
+                                                                                  self.request_data))
 
     def validate(self):
         if self.validate_csrf:
@@ -51,6 +63,11 @@ class AskEndpointValidator:
         self.data_validation()
         if len(self.errors) > 0:
             return False
+
+        if self.validate_claim_url:
+            self.claim_url_validation()
+            if len(self.errors) > 0:
+                return False
 
         self.token_validation()
         if len(self.errors) > 0:
@@ -125,6 +142,18 @@ class AskEndpointValidator:
         if not Web3.is_address(token_address):
             self.errors.append(self.messages['INVALID_TOKEN_ADDRESS'])
 
+        if current_app.config['CLAIM_VALIDATION_ENABLED']:
+            claim_validation_url = self.request_data.get('claimValidationURL', None)
+            if not claim_validation_url:
+                self.errors.append(self.messages['CLAIM_VALIDATION_MISSING_EXTERNAL_SOURCE_URL'])
+            elif current_app.config['CLAIM_VALIDATION_ALLOWED_WEBSITE'] not in claim_validation_url:
+                self.errors.append(self.messages['CLAIM_VALIDATION_NOT_ALLOWED_DOMAIN'])
+            elif current_app.config['CLAIM_VALIDATION_WEBSITE_TYPE'] == ClaimValidationType.discourse.value \
+                    and '/t/' not in claim_validation_url:
+                self.errors.append(self.messages['CLAIM_VALIDATION_INVALID_URL'])
+        else:
+            claim_validation_url = None
+
         if len(self.errors) > 0:
             self.http_return_code = 400
         else:
@@ -132,6 +161,44 @@ class AskEndpointValidator:
             self.amount = float(amount)
             self.chain_id = self.request_data.get('chainId')
             self.recipient = recipient
+            self.claim_validation_url = claim_validation_url
+
+    def claim_url_validation(self):
+        # validate Claim URL
+        post_id = ''
+        thread_id = ''
+
+        if current_app.config['CLAIM_VALIDATION_WEBSITE_TYPE'] == ClaimValidationType.discourse.value:
+            # valid URL: https://forum.gnosis.io/t/POST-NAME/POST-ID/THREAD-ID
+            _, post_id, thread_id = self.claim_validation_url.split('/t/')[1].split('/')
+            logging.info('Validating Discourse message POST-ID: %s THREAD-ID: %s' % (post_id, thread_id))
+
+            # API URL: https://forum.gnosis.io/t/POST-ID/posts.json
+            api_url = current_app.config['CLAIM_VALIDATION_DISCOURSE_API_URL'] + '/t/' + post_id + '/posts.json'
+            try:
+                response = requests.get(api_url)
+                if response.ok:
+                    thread = response.json()['post_stream']['posts'][int(thread_id)]
+                    created_at = datetime.datetime.fromisoformat(thread['created_at'])
+                    time_diff_seconds = (datetime.datetime.utcnow().astimezone(datetime.timezone.utc) - created_at).total_seconds()
+                    one_hour = 60 * 60
+                    if time_diff_seconds <= one_hour:
+                        if self.recipient.lower() in thread['cooked'].lower():
+                            logging.info('Successfully validated POST-ID: %s THREAD-ID: %s Recipient: %s' % (post_id, thread_id, self.recipient))
+                        else:
+                            self.errors.append(self.messages['CLAIM_VALIDATION_INVALID_RECIPIENT'])
+                            self.http_return_code = 400
+                    else:
+                        self.errors.append(self.messages['CLAIM_VALIDATION_EXPIRED_RESOURCE'])
+                else:
+                    self.errors.append(self.messages['CLAIM_VALIDATION_INVALID_URL'])
+                    self.http_return_code = 400
+            except Exception:
+                logging.exception('Error occurred while validating user claim')
+                self.errors.append('we could not verify your request, please try again or reach out to support.')
+                self.http_return_code = 400
+        else:
+            raise NotImplementedError
 
     def captcha_validation(self):
         error_key = 'captcha'
@@ -196,6 +263,7 @@ class AskEndpointValidator:
         # in the period of time defined by FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS
         if transaction:
             time_diff_seconds = (datetime.datetime.utcnow() - transaction.created).total_seconds()
+            (datetime.datetime.utcnow().astimezone(datetime.timezone.utc) - datetime.datetime.fromisoformat('2024-04-26T09:34:01.842Z')).total_seconds()
             if time_diff_seconds < current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS']:
                 time_limit_hours = current_app.config['FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS'] / (24*60)
                 time_diff_hours = time_limit_hours-(time_diff_seconds/(24*60))
