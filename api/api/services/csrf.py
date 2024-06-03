@@ -28,9 +28,13 @@ class CSRFToken:
         request_id = '%d' % random.randint(0, 1000)
         if not timestamp:
             timestamp = datetime.now().timestamp()
-        data_to_encrypt = '{"requestId":"%s","salt":"%s","timestamp":"%f"}' % (request_id, self._salt, timestamp)
+        data_to_encrypt = '%s%s%f' % (request_id, self._salt, timestamp)
 
         cipher_rsa = PKCS1_OAEP.new(self._pubkey)
+        # Data_to_encrypt can be of variable length, but not longer than
+        # the RSA modulus (in bytes) minus 2, minus twice the hash output size.
+        # For instance, if you use RSA 2048 and SHA-256, the longest
+        # message you can encrypt is 190 byte long.
         token = cipher_rsa.encrypt(data_to_encrypt.encode())
 
         return CSRFTokenItem(request_id, token.hex(), timestamp)
@@ -39,7 +43,7 @@ class CSRFToken:
         try:
             cipher_rsa = PKCS1_OAEP.new(self._privkey)
             decrypted_text = cipher_rsa.decrypt(bytes.fromhex(token)).decode()
-            expected_text = '{"requestId":"%s","salt":"%s","timestamp":"%f"}' % (request_id, self._salt, timestamp)
+            expected_text = '%s%s%f' % (request_id, self._salt, timestamp)
             if decrypted_text == expected_text:
                 # Check that timestamp is OK, the diff between now() and creation time in seconds
                 # must be greater than min. waiting period.
