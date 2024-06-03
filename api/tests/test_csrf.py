@@ -1,3 +1,5 @@
+import unittest
+
 from .conftest import BaseTest
 
 
@@ -17,3 +19,7 @@ class TestCSRF(BaseTest):
         self.assertFalse(
             self.csrf.validate_token(token_obj.request_id, 'myfaketoken')
         )
+
+
+if __name__ == '__main__':
+    unittest.main()

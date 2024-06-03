@@ -1,8 +1,10 @@
 from typing import Any
 import unittest
 import datetime
+import os
 
 from api.services.validator import AskEndpointValidator
+from api.const import ClaimValidationType
 from .conftest import ClaimValidationEnabledBaseTest
 from .temp_env_var import (TEMP_ENV_VARS, FAUCET_CHAIN_ID,
                            DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
@@ -71,10 +73,15 @@ class TestClaimValidationEnabled(ClaimValidationEnabledBaseTest):
                          mock_requests_request())
     @unittest.mock.patch('api.services.validator.request',
                          mock_flask_request())
+    # @unittest.mock.patch.dict(os.environ, {
+    #     "CLAIM_VALIDATION_ENABLED": 'True',
+    #     'CLAIM_VALIDATION_WEBSITE_TYPE': ClaimValidationType.discourse.value})
     def test_claim_url_validation(self, *args):
-        claim_validation_url = '%s/t/faucet-requests-test/%d/%d' % (TEMP_ENV_VARS['CLAIM_VALIDATION_ALLOWED_WEBSITE'],
-                                               claim_post_id,
-                                               claim_thread_id)
+        claim_validation_url = '%s/t/faucet-requests-test/%d/%d' % (
+            TEMP_ENV_VARS['CLAIM_VALIDATION_ALLOWED_WEBSITE'],
+            claim_post_id,
+            claim_thread_id)
+
         request_data = {
             'claimValidationURL': claim_validation_url,
             'chainId': FAUCET_CHAIN_ID,
@@ -94,3 +101,7 @@ class TestClaimValidationEnabled(ClaimValidationEnabledBaseTest):
 
         self.assertTrue(len(validator.errors) == 0)
         self.assertTrue(validator.validate())
+
+
+if __name__ == '__main__':
+    unittest.main()

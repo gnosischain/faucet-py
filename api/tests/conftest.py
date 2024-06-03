@@ -130,8 +130,6 @@ class RateLimitIPorAddressBaseTest(BaseTest):
 
 
 class ClaimValidationEnabledBaseTest(BaseTest):
-    # @mock.patch('requests.get', mock.Mock(side_effect = lambda k:{'aurl': 'a response', 'burl' : 'b response'}.get(k, 'unhandled request %s'%k)))
-
     def setUp(self):
         '''
         Set up to do before running each test

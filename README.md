@@ -64,7 +64,17 @@ flask -A api create_enabled_token GNO 10200 0x19C653Da7c37c66208fbfbE8908A5051B5
 flask -A api create_enabled_token xDAI 10200 0x0000000000000000000000000000000000000000 0.01 native
 ```
 
-Once enabled, the token wil appear in the list of enabled tokens on the endpoint `api/v1/info`.
+Once enabled, the token will appear in the list of enabled tokens on the endpoint `api/v1/info`.
+
+#### Change maximum daily amounts per user
+
+If you want to change the amount you are giving out for a specific token, make sure you have sqlite
+installed on the server, e.g. apk update && apk add sqlite.
+
+Enter the database: `sqlite path/to/database`
+
+Search for the token to update: `select chain_id, max_amount_day from tokens where name = 'xDAI'`
+Update amount: `update tokens set max_amount_day = 0.00015 where chain_id = 100;`
 
 ## ReactJS Frontend
 
