@@ -1,14 +1,21 @@
+# from api.settings import CSRF_TIMESTAMP_MAX_SECONDS
 
 import random
+from datetime import datetime
 
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 
+# Waiting period: the minimum time interval between UI asks for the CSFR token
+# and the time it asks for funds.
+CSRF_TIMESTAMP_MIN_SECONDS = 15
+
 
 class CSRFTokenItem:
-    def __init__(self, request_id, token):
+    def __init__(self, request_id, token, timestamp):
         self.request_id = request_id
         self.token = token
+        self.timestamp = timestamp
 
 
 class CSRFToken:
@@ -17,23 +24,30 @@ class CSRFToken:
         self._pubkey = self._privkey.publickey()
         self._salt = salt
 
-    def generate_token(self):
+    def generate_token(self, timestamp=None):
         request_id = '%d' % random.randint(0, 1000)
-        data_to_encrypt = '%s%s' % (request_id, self._salt)
+        if not timestamp:
+            timestamp = datetime.now().timestamp()
+        data_to_encrypt = '%s%s%f' % (request_id, self._salt, timestamp)
 
         cipher_rsa = PKCS1_OAEP.new(self._pubkey)
         token = cipher_rsa.encrypt(data_to_encrypt.encode())
 
-        return CSRFTokenItem(request_id, token.hex())
+        return CSRFTokenItem(request_id, token.hex(), timestamp)
 
-    def validate_token(self, request_id, token):
+    def validate_token(self, request_id, token, timestamp):
         try:
             cipher_rsa = PKCS1_OAEP.new(self._privkey)
             decrypted_text = cipher_rsa.decrypt(bytes.fromhex(token)).decode()
-
-            expected_text = '%s%s' % (request_id, self._salt)
+            expected_text = '%s%s%f' % (request_id, self._salt, timestamp)
             if decrypted_text == expected_text:
-                return True
+                # Check that timestamp is OK, the diff between now() and creation time in seconds
+                # must be greater than min. waiting period.
+                # Waiting period: the minimum time interval between UI asks for the CSFR token and the time it asks for funds.
+                seconds_diff = (datetime.now()-datetime.fromtimestamp(timestamp)).total_seconds()
+                if seconds_diff > CSRF_TIMESTAMP_MIN_SECONDS:
+                    return True
+                return False
             return False
         except Exception:
             return False

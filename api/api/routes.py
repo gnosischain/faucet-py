@@ -38,7 +38,8 @@ def info():
         chainName=current_app.config['FAUCET_CHAIN_NAME'],
         faucetAddress=current_app.config['FAUCET_ADDRESS'],
         csrfToken=csrf_item.token,
-        csrfRequestId=csrf_item.request_id
+        csrfRequestId=csrf_item.request_id,
+        csrfTimestamp=csrf_item.timestamp
     ), 200
 
 

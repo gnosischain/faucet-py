@@ -86,7 +86,12 @@ class AskEndpointValidator:
             self.errors.append('Bad request')
             self.http_return_code = 400
 
-        csrf_valid = self.csrf.validate_token(request_id, token)
+        timestamp = self.request_data.get('timestamp', None)
+        if not timestamp:
+            self.errors.append('Bad request')
+            self.http_return_code = 400
+
+        csrf_valid = self.csrf.validate_token(request_id, token, timestamp)
         if not csrf_valid:
             self.errors.append('Bad request')
             self.http_return_code = 400

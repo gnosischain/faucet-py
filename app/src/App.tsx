@@ -10,6 +10,7 @@ import Faucet from "./components/FaucetForm/Faucet"
 interface CSRFInfo {
   csrfToken: string
   requestId:  string
+  timestamp: number
 }
 
 const chainName:{ [key: string]: string }= {
@@ -22,7 +23,7 @@ function App(): JSX.Element {
   const [loading, setLoading] = useState(true)
   const [enabledTokens, setEnabledTokens] = useState([])
   const [faucetLoading, setFaucetLoading] = useState(true)
-  const [csrfInfo, setCSRFInfo] = useState<CSRFInfo>({csrfToken: '', requestId: ''})
+  const [csrfInfo, setCSRFInfo] = useState<CSRFInfo>({csrfToken: '', requestId: '', timestamp: 0})
 
   const getFaucetInfo = async () => {
     return axios.get(`${process.env.REACT_APP_FAUCET_API_URL}/info`)
@@ -40,21 +41,24 @@ function App(): JSX.Element {
 
         csrfInfo.csrfToken = response.data.csrfToken,
         csrfInfo.requestId = response.data.csrfRequestId
+        csrfInfo.timestamp = response.data.csrfTimestamp
         setCSRFInfo(csrfInfo)
-
       })
       .catch(() => {
         toast.error("Network error")
       })
       .finally(() => {
-        setFaucetLoading(false)
-        setLoading(false)
+        // 5 seconds waiting period
+        setTimeout(function () {
+          setFaucetLoading(false)
+          setLoading(false)
+        }, 5000)
       })
   }, [])
 
   const title = faucetLoading ? "FAUCET" : `${chainName[chainId]} CHAIN`
   const subtitle = faucetLoading
-    ? "Loading..."
+    ? "Application loading..."
     : (chainId === 100 ? "Faucet" : "Testnet Faucet")
   
   return (
@@ -80,6 +84,7 @@ function App(): JSX.Element {
           setLoading={setLoading}
           csrfToken={csrfInfo.csrfToken}
           requestId={csrfInfo.requestId}
+          timestamp={csrfInfo.timestamp}
         />
         <h3>Want more{chainId === 100 ? '?' : ' on Gnosis Chain?'}</h3>
         <ul>

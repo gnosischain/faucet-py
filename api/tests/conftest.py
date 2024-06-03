@@ -1,5 +1,6 @@
 import os
-from unittest import TestCase, TestResult, mock
+from unittest import TestCase, mock
+from datetime import datetime
 
 from api.services import CSRF, Strategy
 from api.services.database import Token, db
@@ -13,6 +14,7 @@ api_prefix = '/api/v1'
 
 
 class BaseTest(TestCase):
+    valid_csrf_timestamp = datetime(2020, 1, 18, 9, 30, 0).timestamp()
 
     def mock_claim_native(self, *args):
         tx_hash = '0x0' + '%d' % self.native_tx_counter * 63
@@ -73,7 +75,8 @@ class BaseTest(TestCase):
 
             self.csrf = CSRF.instance
             # use same token for the whole test
-            self.csrf_token = self.csrf.generate_token()
+            # use a timestamp that would be actually validated by the CSRF class.
+            self.csrf_token = self.csrf.generate_token(timestamp=self.valid_csrf_timestamp)
 
     def tearDown(self):
         '''
@@ -105,7 +108,8 @@ class RateLimitIPBaseTest(BaseTest):
 
             self.csrf = CSRF.instance
             # use same token for the whole test
-            self.csrf_token = self.csrf.generate_token()
+            # use a timestamp that would be actually validated by the CSRF class.
+            self.csrf_token = self.csrf.generate_token(timestamp=self.valid_csrf_timestamp)
 
 
 class RateLimitIPorAddressBaseTest(BaseTest):
@@ -128,4 +132,5 @@ class RateLimitIPorAddressBaseTest(BaseTest):
 
             self.csrf = CSRF.instance
             # use same token for the whole test
-            self.csrf_token = self.csrf.generate_token()
+            # use a timestamp that would be actually validated by the CSRF class.
+            self.csrf_token = self.csrf.generate_token(timestamp=self.valid_csrf_timestamp)
