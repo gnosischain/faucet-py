@@ -12,7 +12,8 @@ interface FaucetProps {
   chainId: number,
   setLoading: Dispatch<SetStateAction<boolean>>,
   csrfToken: string,
-  requestId: string
+  requestId: string,
+  timestamp: number
 }
 
 const blockscanner:{ [key: string]: string }= {
@@ -20,12 +21,13 @@ const blockscanner:{ [key: string]: string }= {
   10200: "https://gnosis-chiado.blockscout.com/tx/"
 }
 
-function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId }: FaucetProps): JSX.Element {
+function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId, timestamp }: FaucetProps): JSX.Element {
   const [walletAddress, setWalletAddress] = useState<string>("")
   const [token, setToken] = useState<Token | null>(null)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth)
+  const [requestOngoing, setRequestOngoing] = useState(false)
 
   const captchaRef = useRef<HCaptcha>(null)
 
@@ -88,6 +90,7 @@ function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId }: Fa
 
     if (token) {
       setLoading(true)
+      setRequestOngoing(true)
       try {
         const requestData = {
           recipient: walletAddress,
@@ -95,14 +98,16 @@ function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId }: Fa
           tokenAddress: token.address,
           chainId: chainId,
           amount: token.maximumAmount,
-          requestId: requestId
+          requestId: requestId,
+          timestamp: timestamp
         }
 
         const headers = {
           'X-CSRFToken': csrfToken
         }
 
-        axios
+        setTimeout(function() {
+          axios
           .post(apiURL, requestData, {
             headers: headers
           })
@@ -117,18 +122,24 @@ function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId }: Fa
             setCaptchaToken("")
             captchaRef.current?.resetCaptcha()
 
+            setLoading(false)
+            setRequestOngoing(false)
+
             toast.success("Token sent to your wallet address")
             setTxHash(`${response.data.transactionHash}`)
           })
           .catch((error) => {
             toast.error(formatErrors(error.response.data.errors))
+            setLoading(false)
+            setRequestOngoing(false)
           })
+        }, 10000) // 10 seconds delay
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message)
         }
-      } finally {
         setLoading(false)
+        setRequestOngoing(false)
       }
     }
   }
@@ -177,8 +188,8 @@ function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId }: Fa
           captchaRef={captchaRef}
         />
       </div>
-      <button type="submit" disabled={!captchaToken}>
-        Claim
+      <button type="submit" disabled={!captchaToken || requestOngoing}>
+        {requestOngoing && <span>We are claiming your tokens... hold on</span> || <span>Claim</span>}
       </button>
       {txHash &&
         <div className="flex-row success">
