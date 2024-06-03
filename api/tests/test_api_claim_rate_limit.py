@@ -20,7 +20,8 @@ class TestAPIWithIPLimitStrategy(RateLimitIPBaseTest):
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS,
-            'requestId': self.csrf_token.request_id
+            'requestId': self.csrf_token.request_id,
+            'timestamp': self.valid_csrf_timestamp
         }, headers={
             'X-CSRFToken': self.csrf_token.token
         })
@@ -33,7 +34,8 @@ class TestAPIWithIPLimitStrategy(RateLimitIPBaseTest):
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS,
-            'requestId': self.csrf_token.request_id
+            'requestId': self.csrf_token.request_id,
+            'timestamp': self.valid_csrf_timestamp
         }, headers={
             'X-CSRFToken': self.csrf_token.token
         })
@@ -49,7 +51,8 @@ class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS,
-            'requestId': self.csrf_token.request_id
+            'requestId': self.csrf_token.request_id,
+            'timestamp': self.valid_csrf_timestamp
         }, headers={
             'X-CSRFToken': self.csrf_token.token
         })
@@ -66,7 +69,8 @@ class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS,
-            'requestId': self.csrf_token.request_id
+            'requestId': self.csrf_token.request_id,
+            'timestamp': self.valid_csrf_timestamp
         }, headers={
             'X-CSRFToken': self.csrf_token.token
         })
@@ -84,7 +88,8 @@ class TestAPIWithIPorRecipientLimitStrategy(RateLimitIPorAddressBaseTest):
             'amount': DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
             'recipient': ZERO_ADDRESS,
             'tokenAddress': ERC20_TOKEN_ADDRESS,
-            'requestId': self.csrf_token.request_id
+            'requestId': self.csrf_token.request_id,
+            'timestamp': self.valid_csrf_timestamp
         }, headers={
             'X-CSRFToken': self.csrf_token.token
         })
