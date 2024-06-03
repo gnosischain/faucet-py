@@ -31,6 +31,10 @@ class CSRFToken:
         data_to_encrypt = '%s%s%f' % (request_id, self._salt, timestamp)
 
         cipher_rsa = PKCS1_OAEP.new(self._pubkey)
+        # Data_to_encrypt can be of variable length, but not longer than
+        # the RSA modulus (in bytes) minus 2, minus twice the hash output size.
+        # For instance, if you use RSA 2048 and SHA-256, the longest
+        # message you can encrypt is 190 byte long.
         token = cipher_rsa.encrypt(data_to_encrypt.encode())
 
         return CSRFTokenItem(request_id, token.hex(), timestamp)
