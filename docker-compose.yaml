@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile 
+    # image: "ghcr.io/gnosischain/faucet-py-api:v0.4.9@sha256:58761f4fa91274dc393fbaf3a61c434f6b6627ada8a1cfe92a9b8bff265fe5f5"  
+    container_name: api
+    command: ["sh", "/api/scripts/production_run_api.sh"]
+    env_file: "./api/.env"
+    environment:
+      - FAUCET_DATABASE_URI=sqlite:////db/gc_faucet.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - db-volume:/db:rw 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 500M
+        reservations:
+          cpus: '0.25'
+          memory: 250M
+
+  # ui:
+  #   build:
+  #     context: ./app
+  #     dockerfile: Dockerfile 
+  #   # image: "ghcr.io/gnosischain/faucet-py-ui:v0.4.9-gc@sha256:819f44e801d69d847c8866ff717281a2e989cb5e9076aad56c7a410b7a552b06"  
+  #   container_name: ui
+  #   ports:
+  #     - "80:80"
+  #   env_file: "./app/.env"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.1'
+  #         memory: 50M
+  #       reservations:
+  #         cpus: '0.05'
+  #         memory: 25M
+
+volumes:
+  db-volume:
+    driver: local
