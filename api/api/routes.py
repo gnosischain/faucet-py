@@ -69,6 +69,7 @@ def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=Tru
     try:
         # convert recipient address to checksum address
         recipient = Web3.to_checksum_address(validator.recipient)
+        print(f"will try to send {amount_wei} to {recipient}")
 
         w3 = Web3Singleton(current_app.config['FAUCET_RPC_URL'],
                            current_app.config['FAUCET_PRIVATE_KEY'])
@@ -78,11 +79,13 @@ def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=Tru
                                    current_app.config['FAUCET_ADDRESS'],
                                    recipient,
                                    amount_wei)
+            print(f"native token txn: {tx_hash}")
         else:
             tx_hash = claim_token(w3, current_app.config['FAUCET_ADDRESS'],
                                   recipient,
                                   amount_wei,
                                   validator.token.address)
+            print(f"token with address txn: {validator.token.address}")
 
         # save transaction data on DB
         transaction = Transaction()
