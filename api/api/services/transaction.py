@@ -28,12 +28,26 @@ def claim_native(w3, sender, recipient, amount):
     - recipient: String
     - amount: integer in wei format
     """
+
+    nonce = w3.eth.get_transaction_count(sender)
+
     tx_dict = {
         'from': sender,
         'to': recipient,
-        'value': amount
+        'value': amount,
+        'nonce': nonce
     }
-    return w3.eth.send_transaction(tx_dict).hex()
+    
+    tx_hash = w3.eth.send_transaction(tx_dict).hex()
+
+    # this may cause a timeout, keep here for testing purposes
+    # receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    # if receipt.status == 1:
+    #     print(f"transaction successful {tx_hash}")
+    # else:
+    #     print(f"transaction failed {tx_hash}")
+
+    return tx_hash
 
 
 def claim_token(w3, sender, recipient, amount, token_address):
