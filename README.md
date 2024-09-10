@@ -116,6 +116,8 @@ yarn start
 
 ### Docker Compose Up and create Access keys
 
+If you do not reset the volume you will be able to reuse the sqlite database with latest data (access keys and enabled tokens)
+
 ```
 
 docker-compose up --build -d
@@ -124,11 +126,11 @@ docker ps
 
 docker exec -it <container_name_or_id> /bin/bash
 
-docker exec -it faee3118d09e flask -A api create_access_keys
+docker exec -it <container_name_or_id> flask -A api create_access_keys
 
-docker exec -it faee3118d09e flask -A api create_enabled_token xDAI 100 0x0000000000000000000000000000000000000000 0.01 native
+docker exec -it <container_name_or_id> flask -A api create_enabled_token xDAI 100 0x0000000000000000000000000000000000000000 0.01 native
 
-docker logs -f faee3118d09e
+docker logs -f <container_name_or_id>
 
 ```
 
