@@ -38,6 +38,7 @@ TEMP_ENV_VARS = {
     'FAUCET_RATE_LIMIT_TIME_LIMIT_SECONDS': '10',
     'FAUCET_DATABASE_URI': 'sqlite://',  # run in-memory
     # 'FAUCET_DATABASE_URI': 'sqlite:///test.db',
+    'FAUCET_ENABLE_CLI_API': 'True',
     'CAPTCHA_SECRET_KEY': CAPTCHA_TEST_SECRET_KEY,
     'CSRF_PRIVATE_KEY': privatekey.export_key().decode(),
     'CSRF_SECRET_SALT': 'testsalt'

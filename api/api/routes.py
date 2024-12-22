@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, current_app, jsonify, request
 from web3 import Web3
 
@@ -5,6 +7,7 @@ from .const import FaucetRequestType, TokenType
 from .services import (CSRF, AskEndpointValidator, Web3Singleton, claim_native,
                        claim_token)
 from .services.database import AccessKey, Token, Transaction
+
 
 apiv1 = Blueprint("version1", "version1")
 
@@ -69,6 +72,7 @@ def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=Tru
     try:
         # convert recipient address to checksum address
         recipient = Web3.to_checksum_address(validator.recipient)
+        logging.info(f'will try to send {amount_wei} to {recipient}')
 
         w3 = Web3Singleton(current_app.config['FAUCET_RPC_URL'],
                            current_app.config['FAUCET_PRIVATE_KEY'])
@@ -78,11 +82,13 @@ def _ask(request_data, request_headers, validate_captcha=True, validate_csrf=Tru
                                    current_app.config['FAUCET_ADDRESS'],
                                    recipient,
                                    amount_wei)
+            logging.info(f'native token txn: {tx_hash}')
         else:
             tx_hash = claim_token(w3, current_app.config['FAUCET_ADDRESS'],
                                   recipient,
                                   amount_wei,
                                   validator.token.address)
+            logging.info(f'token with address {validator.token.address} txn: {tx_hash}')
 
         # save transaction data on DB
         transaction = Transaction()
@@ -111,6 +117,9 @@ def ask():
 
 @apiv1.route("/cli/ask", methods=["POST"])
 def cli_ask():
+    if not current_app.config['FAUCET_ENABLE_CLI_API']:
+        return jsonify(errors=['Endpoint disabled']), 403
+
     access_key_id = request.headers.get('X-faucet-access-key-id', None)
     secret_access_key = request.headers.get('X-faucet-secret-access-key', None)
 

@@ -1,7 +1,7 @@
 import React, { RefObject } from "react"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 
-const siteKey = process.env.REACT_APP_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"
+const siteKey = process.env.REACT_APP_CAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001" // common test key
 
 interface CaptchaProps {
   setCaptchaToken: (token: string) => void,
@@ -9,7 +9,7 @@ interface CaptchaProps {
   captchaRef: RefObject<HCaptcha>
 }
 
-const Captcha: React.FC<CaptchaProps> = ({ setCaptchaToken, windowWidth, captchaRef }) => {
+const HCaptchaWidget: React.FC<CaptchaProps> = ({ setCaptchaToken, windowWidth, captchaRef }) => {
  
   const onVerifyCaptcha = (token: string) => {
     setCaptchaToken(token)
@@ -25,4 +25,4 @@ const Captcha: React.FC<CaptchaProps> = ({ setCaptchaToken, windowWidth, captcha
   )
 }
 
-export default Captcha
+export default HCaptchaWidget

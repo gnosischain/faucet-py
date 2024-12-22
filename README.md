@@ -15,6 +15,8 @@ cd api
 python3 -m venv .venv
 . .venv/bin/activate
 pip3 install -r requirements-dev.txt
+
+pip install setuptools
 ```
 
 ### Run application
@@ -66,6 +68,19 @@ flask -A api create_enabled_token xDAI 10200 0x000000000000000000000000000000000
 
 Once enabled, the token will appear in the list of enabled tokens on the endpoint `api/v1/info`.
 
+#### Create access keys
+
+To create access keys on the API just run the command `create_access_keys`.
+Accepted parameters: token name, chain ID, token address, maximum amount per day per user, whether native or erc20
+
+Samples below:
+
+```
+cd /api
+flask -A api create_access_keys
+```
+
+
 #### Change maximum daily amounts per user
 
 If you want to change the amount you are giving out for a specific token, make sure you have sqlite
@@ -97,3 +112,25 @@ yarn
 cd app
 yarn start
 ```
+
+
+### Docker Compose Up and create Access keys
+
+If you do not reset the volume you will be able to reuse the sqlite database with latest data (access keys and enabled tokens)
+
+```
+
+docker-compose up --build -d
+
+docker ps
+
+docker exec -it <container_name_or_id> /bin/bash
+
+docker exec -it <container_name_or_id> flask -A api create_access_keys
+
+docker exec -it <container_name_or_id> flask -A api create_enabled_token xDAI 100 0x0000000000000000000000000000000000000000 0.01 native
+
+docker logs -f <container_name_or_id>
+
+```
+

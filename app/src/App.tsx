@@ -48,11 +48,8 @@ function App(): JSX.Element {
         toast.error("Network error")
       })
       .finally(() => {
-        // 5 seconds waiting period
-        setTimeout(function () {
-          setFaucetLoading(false)
-          setLoading(false)
-        }, 5000)
+        setFaucetLoading(false)
+        setLoading(false)
       })
   }, [])
 
