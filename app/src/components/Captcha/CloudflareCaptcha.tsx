@@ -5,14 +5,13 @@ const siteKey = process.env.REACT_APP_CAPTCHA_SITE_KEY || "10000000-ffff-ffff-ff
 
 interface CaptchaProps {
   setCaptchaToken: (token: string) => void,
-  // windowWidth: number,
-  // captchaRef: null
+  // windowWidth: number, // Not needed for Cloudflare
+  // captchaRef: null // Not needed for Cloudflare
 }
 
 const CloudflareCaptchaWidget: React.FC<CaptchaProps> = ({ setCaptchaToken }) => {
  
   const onVerifyCaptcha = (token: string) => {
-    console.log(token)
     setCaptchaToken(token)
   }
 
