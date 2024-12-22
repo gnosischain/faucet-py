@@ -10,7 +10,7 @@ from .temp_env_var import (DEFAULT_ERC20_MAX_AMOUNT_PER_DAY,
                            ERC20_TOKEN_ADDRESS, FAUCET_CHAIN_ID)
 
 
-class TestAPICli(BaseTest):
+class TestAPICliEnabledEndpoints(BaseTest):
     def test_ask_route_parameters(self):
         access_key_id, secret_access_key = generate_access_key()
         http_headers = {

@@ -4,7 +4,6 @@ from datetime import datetime
 
 from api.services import CSRF, Strategy
 from api.services.database import Token, db
-from flask.testing import FlaskClient
 
 from api import create_app
 
@@ -25,13 +24,19 @@ class BaseTest(TestCase):
         tx_hash = '0x1' + '%d' % self.erc20_tx_counter * 63
         self.erc20_tx_counter += 1
         return tx_hash
+    
+    def mock_captcha_verify(self, *args):
+        class Test:
+            def verify(self, *args):
+                return True
+        return Test
 
     def _mock(self, env_variables=None):
         # Mock values
         self.patchers = [
             mock.patch('api.routes.claim_native', self.mock_claim_native),
             mock.patch('api.routes.claim_token', self.mock_claim_erc20),
-            mock.patch('api.services.validator.captcha_verify', return_value=True),
+            mock.patch('api.services.validator.CaptchaSingleton', self.mock_captcha_verify),
             mock.patch('api.api.print_info', return_value=None)
         ]
         if env_variables:

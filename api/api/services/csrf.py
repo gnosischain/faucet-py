@@ -6,9 +6,10 @@ from datetime import datetime
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 
-# Waiting period: the minimum time interval between UI asks for the CSFR token
-# and the time it asks for funds.
-CSRF_TIMESTAMP_MIN_SECONDS = 15
+# Waiting period: the minimum time interval between the UI asks
+# for the CSFR token to /api/v1/info and the time the UI can ask for funds.
+# This check aims to block any bots that could be triggering actions through the UI.
+CSRF_TIMESTAMP_MIN_SECONDS = 5
 
 
 class CSRFTokenItem:
@@ -45,9 +46,9 @@ class CSRFToken:
             decrypted_text = cipher_rsa.decrypt(bytes.fromhex(token)).decode()
             expected_text = '%s%s%f' % (request_id, self._salt, timestamp)
             if decrypted_text == expected_text:
-                # Check that timestamp is OK, the diff between now() and creation time in seconds
-                # must be greater than min. waiting period.
-                # Waiting period: the minimum time interval between UI asks for the CSFR token and the time it asks for funds.
+                # Check that the timestamp is OK, the diff between now() and creation time in seconds
+                # must be greater than the minimum waiting period.
+                # Waiting period: the minimum time interval between UI asks for the CSFR token and the time the UI can ask for funds.
                 seconds_diff = (datetime.now()-datetime.fromtimestamp(timestamp)).total_seconds()
                 if seconds_diff > CSRF_TIMESTAMP_MIN_SECONDS:
                     return True

@@ -1,10 +1,9 @@
-import { useState, useRef, ChangeEvent, FormEvent, useEffect, Dispatch, SetStateAction } from "react"
+import { useState, ChangeEvent, FormEvent, useEffect, Dispatch, SetStateAction } from "react"
 import "./Faucet.css"
 import { toast } from "react-toastify"
 import axios from "axios"
-import Captcha from "../Captcha/Captcha"
+import Captcha from "../Captcha/CloudflareCaptcha"
 import TokenSelect, { Token } from "../TokenSelect/TokenSelect"
-import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { formatLimit } from "../../utils"
 
 interface FaucetProps {
@@ -28,8 +27,6 @@ function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId, time
   const [txHash, setTxHash] = useState<string | null>(null)
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth)
   const [requestOngoing, setRequestOngoing] = useState(false)
-
-  const captchaRef = useRef<HCaptcha>(null)
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -106,34 +103,33 @@ function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId, time
           'X-CSRFToken': csrfToken
         }
 
-        setTimeout(function() {
-          axios
-          .post(apiURL, requestData, {
-            headers: headers
-          })
-          .then((response) => {
-            setWalletAddress("")
+        axios
+        .post(apiURL, requestData, {
+          headers: headers
+        })
+        .then((response) => {
+          setWalletAddress("")
 
-            if (enabledTokens.length > 1 ) {
-              setToken(null)
-            }
-   
-            // Reset captcha
-            setCaptchaToken("")
-            captchaRef.current?.resetCaptcha()
+          if (enabledTokens.length > 1 ) {
+            setToken(null)
+          }
 
-            setLoading(false)
-            setRequestOngoing(false)
+          // Reset captcha
+          setCaptchaToken("")
+          // For HCAPTCHA:
+          // captchaRef.current?.resetCaptcha()
 
-            toast.success("Token sent to your wallet address")
-            setTxHash(`${response.data.transactionHash}`)
-          })
-          .catch((error) => {
-            toast.error(formatErrors(error.response.data.errors))
-            setLoading(false)
-            setRequestOngoing(false)
-          })
-        }, 10000) // 10 seconds delay
+          setLoading(false)
+          setRequestOngoing(false)
+
+          toast.success("Token sent to your wallet address")
+          setTxHash(`${response.data.transactionHash}`)
+        })
+        .catch((error) => {
+          toast.error(formatErrors(error.response.data.errors))
+          setLoading(false)
+          setRequestOngoing(false)
+        })
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message)
@@ -184,8 +180,8 @@ function Faucet({ enabledTokens, chainId, setLoading, csrfToken, requestId, time
       <div className="flex-row flex-row-captcha">
         <Captcha
           setCaptchaToken={setCaptchaToken}
-          windowWidth={windowWidth}
-          captchaRef={captchaRef}
+          // windowWidth={windowWidth}
+          // captchaRef={captchaRef}
         />
       </div>
       <button type="submit" disabled={!captchaToken || requestOngoing}>
