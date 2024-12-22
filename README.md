@@ -56,6 +56,7 @@ python3 -m flake8
 #### Add enabled tokens
 
 To enable tokens on the API just run the command `create_enabled_token`.
+The environment variable `FAUCET_ENABLE_CLI_API` must be set to `True`.
 Accepted parameters: token name, chain ID, token address, maximum amount per day per user, whether native or erc20
 
 Samples below:
