@@ -5,7 +5,7 @@ from api.const import TokenType
 from flask import current_app, request
 from web3 import Web3
 
-from .captcha import captcha_verify
+from .captcha import CaptchaSingleton
 from .csrf import CSRF
 from .database import AccessKeyConfig, BlockedUsers, Token, Transaction
 from .rate_limit import Strategy
@@ -140,14 +140,23 @@ class AskEndpointValidator:
 
     def captcha_validation(self):
         error_key = 'captcha'
-        # check hcatpcha
-        catpcha_verified = captcha_verify(
+
+        captcha = CaptchaSingleton(current_app.config['CAPTCHA_PROVIDER'])
+        catpcha_verified = captcha.verify(
             self.request_data.get('captcha'),
             current_app.config['CAPTCHA_VERIFY_ENDPOINT'],
             current_app.config['CAPTCHA_SECRET_KEY'],
             self.ip_address,
             current_app.config['CAPTCHA_SITE_KEY']
         )
+        # check hcatpcha
+        # catpcha_verified = captcha_verify(
+        #     self.request_data.get('captcha'),
+        #     current_app.config['CAPTCHA_VERIFY_ENDPOINT'],
+        #     current_app.config['CAPTCHA_SECRET_KEY'],
+        #     self.ip_address,
+        #     current_app.config['CAPTCHA_SITE_KEY']
+        # )
 
         if not catpcha_verified:
             self.errors.append('%s: validation failed' % error_key)

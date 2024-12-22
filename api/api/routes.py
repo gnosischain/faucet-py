@@ -8,6 +8,7 @@ from .services import (CSRF, AskEndpointValidator, Web3Singleton, claim_native,
                        claim_token)
 from .services.database import AccessKey, Token, Transaction
 
+
 apiv1 = Blueprint("version1", "version1")
 
 
@@ -116,6 +117,9 @@ def ask():
 
 @apiv1.route("/cli/ask", methods=["POST"])
 def cli_ask():
+    if not current_app.config['FAUCET_ENABLE_CLI_API']:
+        return jsonify(errors=['Endpoint disabled']), 403
+
     access_key_id = request.headers.get('X-faucet-access-key-id', None)
     secret_access_key = request.headers.get('X-faucet-secret-access-key', None)
 

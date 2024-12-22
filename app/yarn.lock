@@ -1454,18 +1454,18 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.1.tgz#16308cea045f0fc777b6ff20a9f25474dd8293d2"
   integrity sha512-9TANp6GPoMtYzQdt54kfAyMmz1+osLlXdg2ENroU7zzrtflTLrrC/lgrIfaSe+Wu0b89GKccT7vxXA0MoAIO+Q==
 
-"@hcaptcha/loader@^1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@hcaptcha/loader/-/loader-1.0.9.tgz#7992fd1683a3ce1e6ac4da6f20ea373db38ffc51"
-  integrity sha512-HqsreHb5A9uVKW9HqlSX+AvNHIP0bd3uZPixWKKWD1C2+A6j9LpYf33Lua+zzvOksG4GtTIMJXes6IWAy8No/g==
+"@hcaptcha/loader@^1.2.1":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@hcaptcha/loader/-/loader-1.2.4.tgz#541714395a82e27ec0f0e8bd80ef1a0bea141cc3"
+  integrity sha512-3MNrIy/nWBfyVVvMPBKdKrX7BeadgiimW0AL/a/8TohNtJqxoySKgTJEXOQvYwlHemQpUzFrIsK74ody7JiMYw==
 
-"@hcaptcha/react-hcaptcha@^1.9.1":
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/@hcaptcha/react-hcaptcha/-/react-hcaptcha-1.9.1.tgz#621f4b5abe58a1304b093da85d3fc2ddb86b81a4"
-  integrity sha512-Tvym9cl2RsYpyut2262XtNL8bJVfbXFuX9k1UdsMtVpmdvj8xqQMTr/yOTxiLGPqG1Abt9luSwSeLI4e1H/fsw==
+"@hcaptcha/react-hcaptcha@1.10.1":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@hcaptcha/react-hcaptcha/-/react-hcaptcha-1.10.1.tgz#c9c4a913cde4fd6e9c09180f1aa6f65d9f136263"
+  integrity sha512-P0en4gEZAecah7Pt3WIaJO2gFlaLZKkI0+Tfdg8fNqsDxqT9VytZWSkH4WAkiPRULK1QcGgUZK+J56MXYmPifw==
   dependencies:
     "@babel/runtime" "^7.17.9"
-    "@hcaptcha/loader" "^1.0.9"
+    "@hcaptcha/loader" "^1.2.1"
 
 "@humanwhocodes/config-array@^0.11.13":
   version "0.11.13"
@@ -8244,6 +8244,11 @@ react-transition-group@^4.3.0:
     dom-helpers "^5.0.1"
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
+
+react-turnstile@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/react-turnstile/-/react-turnstile-1.1.4.tgz#0c23b2f4b55f83b929407ae9bfbd211fbe5df362"
+  integrity sha512-oluyRWADdsufCt5eMqacW4gfw8/csr6Tk+fmuaMx0PWMKP1SX1iCviLvD2D5w92eAzIYDHi/krUWGHhlfzxTpQ==
 
 react@^18.2.0:
   version "18.2.0"
